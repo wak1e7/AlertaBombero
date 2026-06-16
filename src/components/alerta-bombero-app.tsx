@@ -331,7 +331,9 @@ export function AlertaBomberoApp() {
           <div
             className={cn(
               "flex min-h-0 flex-1 flex-col",
-              !["home", "reports", "map"].includes(step) && "mobile-scroll overflow-y-auto"
+              showBottomNav || !["home", "reports", "map"].includes(step)
+                ? "mobile-scroll overflow-y-auto"
+                : null
             )}
           >
             {step === "phone" ? (
@@ -459,7 +461,7 @@ function AppHeader({
   onBack: () => void;
 }) {
   return (
-    <header className="mb-5 flex items-center justify-between">
+    <header className="mb-5 grid grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-3">
       <Button
         type="button"
         variant="ghost"
@@ -471,9 +473,9 @@ function AppHeader({
         <ArrowLeft aria-hidden="true" />
       </Button>
 
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center justify-center gap-2">
         <BrandMark compact />
-        <span className="text-base font-bold text-brand">AlertaBombero</span>
+        <span className="min-w-0 truncate text-base font-bold text-brand">AlertaBombero</span>
       </div>
 
       {showNotifications ? (
@@ -778,20 +780,20 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
 
 function HomeScreen({ fullName, onReport }: { fullName: string; onReport: () => void }) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+    <div className="flex min-h-full flex-col gap-4">
       <section className="rounded-lg bg-primary p-4 text-primary-foreground">
         <p className="text-xs font-semibold opacity-85">Bienvenido,</p>
-        <h1 className="text-xl font-extrabold">{fullName}</h1>
+        <h1 className="break-words text-xl font-extrabold leading-tight">{fullName}</h1>
       </section>
 
-      <div className="flex items-center gap-2 rounded-lg border border-rose-border bg-card p-3 text-sm font-semibold text-foreground">
-        <MapPin className="size-4 text-primary" aria-hidden="true" />
-        Av. Luis Gonzales
+      <div className="flex items-start gap-2 rounded-lg border border-rose-border bg-card p-3 text-sm font-semibold leading-tight text-foreground">
+        <MapPin className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+        <span className="min-w-0 break-words">Av. Luis Gonzales</span>
       </div>
 
-      <section className="flex min-h-0 flex-1 flex-col items-center justify-center gap-5 text-center">
+      <section className="flex flex-1 flex-col items-center justify-center gap-5 py-2 text-center">
         <div className="flex flex-col gap-2">
-          <h2 className="text-[1.45rem] font-extrabold leading-tight text-foreground">¿Necesitas ayuda de emergencia?</h2>
+          <h2 className="text-xl font-extrabold leading-tight text-foreground">¿Necesitas ayuda de emergencia?</h2>
           <p className="mx-auto max-w-[19rem] text-sm leading-5 text-muted-foreground">
             Presiona el botón para alertar a la central de emergencia más cercana.
           </p>
@@ -800,16 +802,16 @@ function HomeScreen({ fullName, onReport }: { fullName: string; onReport: () => 
         <button
           type="button"
           aria-label="Reportar emergencia"
-          className="relative grid size-[13.5rem] place-items-center rounded-full bg-transparent text-primary outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.98]"
+          className="relative grid size-[216px] shrink-0 place-items-center rounded-full bg-transparent text-primary outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.98]"
           onClick={onReport}
         >
           <span className="absolute inset-0 rounded-full border border-primary/25" aria-hidden="true" />
           <span className="absolute inset-3 rounded-full border border-primary/25" aria-hidden="true" />
           <span className="absolute inset-6 rounded-full border border-primary/20" aria-hidden="true" />
-          <span className="z-10 grid size-40 place-items-center rounded-full bg-primary text-primary-foreground">
-            <span className="flex flex-col items-center gap-3 text-center">
-              <Flame className="size-11" strokeWidth={2.4} aria-hidden="true" />
-              <span className="flex flex-col gap-1 text-lg font-extrabold uppercase leading-tight tracking-wide">
+          <span className="z-10 grid size-[168px] place-items-center rounded-full bg-primary text-primary-foreground">
+            <span className="flex flex-col items-center gap-2 text-center">
+              <Flame className="size-10" strokeWidth={2.4} aria-hidden="true" />
+              <span className="flex flex-col gap-1 text-sm font-extrabold uppercase leading-tight">
                 <span>Reportar</span>
                 <span>Emergencia</span>
               </span>
@@ -1022,21 +1024,21 @@ function SendingScreen({
 
 function MapScreen({ report }: { report: ReportDraft }) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
-      <section className="flex items-start justify-between gap-3 rounded-lg bg-primary p-4 text-primary-foreground">
-        <div className="flex flex-col gap-1">
+    <div className="flex min-h-full flex-col gap-4">
+      <section className="flex flex-wrap items-start justify-between gap-3 rounded-lg bg-primary p-4 text-primary-foreground">
+        <div className="min-w-0 flex flex-col gap-1">
           <p className="text-xs font-semibold opacity-85">Reporte enviado</p>
-          <h1 className="text-xl font-extrabold">{report.type}</h1>
-          <p className="text-sm opacity-90">{report.location}</p>
+          <h1 className="break-words text-xl font-extrabold leading-tight">{report.type}</h1>
+          <p className="break-words text-sm leading-5 opacity-90">{report.location}</p>
         </div>
-        <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-brand">
+        <span className="shrink-0 rounded-full bg-white px-3 py-1 text-sm font-bold text-brand">
           Recibido
         </span>
       </section>
 
       <section
         aria-label="Mapa del reporte"
-        className="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-rose-border bg-[#263238]"
+        className="relative min-h-[420px] flex-1 overflow-hidden rounded-lg border border-rose-border bg-[#263238]"
       >
         <div className="absolute inset-0 opacity-45 [background-image:linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:42px_42px]" />
         <div className="absolute left-8 top-12 h-[22rem] w-14 rotate-[32deg] rounded-full bg-primary/55 blur-sm" />
@@ -1045,15 +1047,15 @@ function MapScreen({ report }: { report: ReportDraft }) {
         <div className="absolute bottom-32 left-24 grid size-11 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg">
           <Flame className="size-6" aria-hidden="true" />
         </div>
-        <div className="absolute right-5 top-5 rounded-lg bg-white p-3 text-left shadow-lg">
+        <div className="absolute left-24 right-5 top-5 rounded-lg bg-white p-3 text-left shadow-lg">
           <p className="text-xs font-bold uppercase text-primary">Emergencia</p>
-          <p className="mt-1 text-sm font-bold text-foreground">{report.type}</p>
+          <p className="mt-1 break-words text-sm font-bold leading-tight text-foreground">{report.type}</p>
           <p className="text-xs text-muted-foreground">Estación cercana asignada</p>
         </div>
         <div className="absolute bottom-5 left-5 right-5 rounded-lg bg-white p-4 shadow-lg">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="size-8 text-primary" aria-hidden="true" />
-            <div>
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="mt-1 size-8 shrink-0 text-primary" aria-hidden="true" />
+            <div className="min-w-0">
               <p className="text-sm font-extrabold text-brand">Alerta recibida</p>
               <p className="text-xs leading-5 text-muted-foreground">
                 La estación asignada ya recibió tu ubicación.
