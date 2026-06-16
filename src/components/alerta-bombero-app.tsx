@@ -49,6 +49,7 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldTitle,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -908,7 +909,7 @@ function ReportScreen({
             </Field>
 
             <Field>
-              <FieldLabel>Evidencia</FieldLabel>
+              <FieldTitle>Evidencia</FieldTitle>
               <button
                 type="button"
                 className="flex min-h-32 w-full flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-primary/35 bg-primary/5 p-4 text-center text-sm font-semibold text-primary outline-none transition-colors hover:bg-primary/10 focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -1376,6 +1377,7 @@ function EvidenceChooser({
             <span className="text-xs font-medium text-muted-foreground">Foto o video</span>
             <input
               type="file"
+              aria-label="Capturar evidencia con la cámara"
               accept="image/*,video/*"
               capture="environment"
               className="sr-only"
@@ -1392,6 +1394,7 @@ function EvidenceChooser({
             <span className="text-xs font-medium text-muted-foreground">Foto o video</span>
             <input
               type="file"
+              aria-label="Subir evidencia desde la galería"
               accept="image/*,video/*"
               className="sr-only"
               onChange={(event) => {
