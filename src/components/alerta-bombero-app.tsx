@@ -308,7 +308,7 @@ export function AlertaBomberoApp() {
   ].includes(step);
 
   return (
-    <main
+    <div
       data-text-scale={accessibilitySettings.textScale}
       data-bold-text={accessibilitySettings.boldText}
       data-high-contrast={accessibilitySettings.highContrast}
@@ -435,7 +435,7 @@ export function AlertaBomberoApp() {
           <BottomNav active={activeNav} onNavigate={(target) => setStep(target)} />
         ) : null}
       </section>
-    </main>
+    </div>
   );
 }
 
