@@ -57,14 +57,6 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -888,25 +880,20 @@ function ReportScreen({
 
             <Field>
               <FieldLabel htmlFor="type">Tipo de emergencia</FieldLabel>
-              <Select
+              <select
+                id="type"
                 value={report.type}
-                onValueChange={(value) =>
-                  onChange({ ...report, type: value as ReportDraft["type"] })
+                className="min-h-12 w-full rounded-lg border border-input bg-muted px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                onChange={(event) =>
+                  onChange({ ...report, type: event.currentTarget.value as ReportDraft["type"] })
                 }
               >
-                <SelectTrigger id="type" className="min-h-12 w-full bg-muted text-base">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {emergencyTypes.map((type) => (
-                      <SelectItem key={type} value={type} className="min-h-10">
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+                {emergencyTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
             </Field>
 
             <Field>
