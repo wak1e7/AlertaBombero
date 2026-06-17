@@ -332,7 +332,7 @@ export function AlertaBomberoApp() {
             className={cn(
               "flex min-h-0 flex-1 flex-col",
               showBottomNav || !["home", "reports", "map"].includes(step)
-                ? "mobile-scroll overflow-y-auto"
+                ? "mobile-scroll scroll-pb-28 overflow-y-auto"
                 : null
             )}
           >
@@ -531,7 +531,7 @@ function PhoneScreen({
       <section className="flex flex-col items-center gap-4 text-center">
         <BrandMark />
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-extrabold text-brand">AlertaBombero</h1>
+          <h1 className="text-3xl font-extrabold leading-tight text-brand">AlertaBombero</h1>
           <p className="mx-auto max-w-[18rem] text-sm leading-6 text-muted-foreground">
             Reporta emergencias en tiempo real de manera rápida y eficiente.
           </p>
@@ -780,7 +780,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
 
 function HomeScreen({ fullName, onReport }: { fullName: string; onReport: () => void }) {
   return (
-    <div className="flex min-h-full flex-col gap-4">
+    <div className="flex flex-col gap-4 pb-4">
       <section className="rounded-lg bg-primary p-4 text-primary-foreground">
         <p className="text-xs font-semibold opacity-85">Bienvenido,</p>
         <h1 className="break-words text-xl font-extrabold leading-tight">{fullName}</h1>
@@ -791,9 +791,11 @@ function HomeScreen({ fullName, onReport }: { fullName: string; onReport: () => 
         <span className="min-w-0 break-words">Av. Luis Gonzales</span>
       </div>
 
-      <section className="flex flex-1 flex-col items-center justify-center gap-5 py-2 text-center">
-        <div className="flex flex-col gap-2">
-          <h2 className="text-xl font-extrabold leading-tight text-foreground">¿Necesitas ayuda de emergencia?</h2>
+      <section className="flex flex-col items-center gap-4 py-1 text-center">
+        <div className="flex w-full flex-col gap-2">
+          <h2 className="mx-auto max-w-[18rem] text-xl font-extrabold leading-tight text-foreground">
+            ¿Necesitas ayuda de emergencia?
+          </h2>
           <p className="mx-auto max-w-[19rem] text-sm leading-5 text-muted-foreground">
             Presiona el botón para alertar a la central de emergencia más cercana.
           </p>
@@ -802,16 +804,16 @@ function HomeScreen({ fullName, onReport }: { fullName: string; onReport: () => 
         <button
           type="button"
           aria-label="Reportar emergencia"
-          className="relative grid size-[216px] shrink-0 place-items-center rounded-full bg-transparent text-primary outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.98]"
+          className="relative grid size-[184px] shrink-0 place-items-center rounded-full bg-transparent text-primary outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.98]"
           onClick={onReport}
         >
           <span className="absolute inset-0 rounded-full border border-primary/25" aria-hidden="true" />
           <span className="absolute inset-3 rounded-full border border-primary/25" aria-hidden="true" />
           <span className="absolute inset-6 rounded-full border border-primary/20" aria-hidden="true" />
-          <span className="z-10 grid size-[168px] place-items-center rounded-full bg-primary text-primary-foreground">
+          <span className="z-10 grid size-[140px] place-items-center rounded-full bg-primary text-primary-foreground">
             <span className="flex flex-col items-center gap-2 text-center">
-              <Flame className="size-10" strokeWidth={2.4} aria-hidden="true" />
-              <span className="flex flex-col gap-1 text-sm font-extrabold uppercase leading-tight">
+              <Flame className="size-8" strokeWidth={2.4} aria-hidden="true" />
+              <span className="flex flex-col gap-0.5 text-xs font-extrabold uppercase leading-tight">
                 <span>Reportar</span>
                 <span>Emergencia</span>
               </span>
@@ -852,7 +854,7 @@ function ReportScreen({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-5 pb-4">
+    <div className="flex flex-1 flex-col gap-5 pb-28">
       <section className="flex flex-col gap-2">
         <h1 className="text-2xl font-extrabold text-brand">Enviar reporte</h1>
         <p className="text-sm leading-6 text-muted-foreground">

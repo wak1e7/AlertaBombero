@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 
 const baseUrl = process.env.APP_URL || "http://127.0.0.1:3000";
 const viewport = { width: 390, height: 844 };
+const edgePath = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 
 async function scan(page, name) {
   const results = await new AxeBuilder({ page }).analyze();
@@ -23,10 +24,19 @@ async function scan(page, name) {
   };
 }
 
+async function browserLaunchOptions() {
+  const hasEdge = await fs
+    .access(edgePath)
+    .then(() => true)
+    .catch(() => false);
+
+  return hasEdge ? { headless: true, executablePath: edgePath } : { headless: true };
+}
+
 async function main() {
   await fs.mkdir("test-artifacts", { recursive: true });
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(await browserLaunchOptions());
   const context = await browser.newContext({ viewport });
   const page = await context.newPage();
   const report = [];
@@ -34,13 +44,16 @@ async function main() {
   await page.goto(baseUrl, { waitUntil: "load" });
   report.push(await scan(page, "01-phone"));
 
-  await page.getByLabel("Número de teléfono").fill("999999999");
+  await page.locator("#phone").fill("999999999");
   await page.getByRole("button", { name: "Continuar" }).click();
-  await page.getByLabel("Código de verificación").fill("123456");
+  await page.getByText("Verifica tu número").waitFor();
+  await page.locator("input").first().click();
+  await page.keyboard.type("123456");
   await page.getByRole("button", { name: "Siguiente" }).click();
-  await page.getByLabel("Nombre").fill("Victor");
-  await page.getByLabel("Apellido").fill("Méndez");
-  await page.getByLabel("DNI").fill("12345678");
+  await page.locator("#name").waitFor();
+  await page.locator("#name").fill("Victor");
+  await page.locator("#lastName").fill("Mendez");
+  await page.locator("#dni").fill("12345678");
   await page.getByRole("button", { name: "Siguiente" }).click();
   await page.getByRole("button", { name: "Empezar" }).click();
   report.push(await scan(page, "02-home"));
