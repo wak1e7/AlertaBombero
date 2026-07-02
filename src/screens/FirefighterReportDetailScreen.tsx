@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Camera, MapPin } from "lucide-react";
+import { ArrowLeft, Camera, LocateFixed, MapPin } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { StatusBadge } from "../components/StatusBadge";
+import { TrackingMap } from "../components/TrackingMap";
 import { getNextFirefighterStatusAction } from "../domain/emergencyStatus";
+import { formatCoordinatePair } from "../domain/location";
 import { getSupabaseClient } from "../lib/supabase";
 import {
   getFirefighterReportDetail,
@@ -11,12 +13,21 @@ import {
   type FirefighterClient,
   type FirefighterReportDetail
 } from "../services/firefighterService";
+import {
+  getLatestLiveLocation,
+  upsertLiveLocation,
+  type LiveLocation,
+  type LiveLocationClient
+} from "../services/liveLocationService";
 
 const firefighterClient = () => getSupabaseClient() as unknown as FirefighterClient;
+const liveLocationClient = () => getSupabaseClient() as unknown as LiveLocationClient;
 
 export function FirefighterReportDetailScreen() {
   const { id } = useParams();
   const [report, setReport] = useState<FirefighterReportDetail | null>(null);
+  const [liveLocation, setLiveLocation] = useState<LiveLocation | null>(null);
+  const [tracking, setTracking] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +38,7 @@ export function FirefighterReportDetailScreen() {
 
     try {
       setReport(await getFirefighterReportDetail(firefighterClient(), id));
+      setLiveLocation(await getLatestLiveLocation(liveLocationClient(), id));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No se pudo cargar el detalle.");
     } finally {
@@ -47,6 +59,39 @@ export function FirefighterReportDetailScreen() {
       getSupabaseClient().removeChannel(channel);
     };
   }, [id]);
+
+  useEffect(() => {
+    if (!tracking || !report || report.status !== "EN_CAMINO") return;
+
+    if (!navigator.geolocation) {
+      setError("Tu navegador no permite compartir ubicacion.");
+      setTracking(false);
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      async (position) => {
+        try {
+          const saved = await upsertLiveLocation(liveLocationClient(), {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            reportId: report.id
+          });
+          setLiveLocation(saved);
+        } catch (caught) {
+          setError(caught instanceof Error ? caught.message : "No se pudo actualizar la ubicacion.");
+          setTracking(false);
+        }
+      },
+      () => {
+        setError("No se pudo obtener tu ubicacion.");
+        setTracking(false);
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [report, tracking]);
 
   async function advanceStatus() {
     if (!report) return;
@@ -97,6 +142,26 @@ export function FirefighterReportDetailScreen() {
               </span>
             </div>
           </div>
+
+          <TrackingMap
+            emergency={{ latitude: Number(report.latitude), longitude: Number(report.longitude) }}
+            firefighter={liveLocation}
+          />
+
+          {report.status === "EN_CAMINO" ? (
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <p className="flex items-center gap-2 text-sm font-black text-ink">
+                <LocateFixed className="h-5 w-5 text-emergency-600" />
+                Ubicacion en vivo
+              </p>
+              <p className="mt-2 text-xs font-semibold text-muted">
+                {liveLocation ? formatCoordinatePair(liveLocation) : "Aun no enviada."}
+              </p>
+              <button className="btn-secondary mt-4" onClick={() => setTracking((current) => !current)} type="button">
+                {tracking ? "Detener ubicacion" : "Iniciar ubicacion"}
+              </button>
+            </div>
+          ) : null}
 
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <p className="flex items-center gap-2 text-sm font-black text-ink">

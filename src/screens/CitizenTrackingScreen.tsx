@@ -3,13 +3,24 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { StatusBadge } from "../components/StatusBadge";
+import { TrackingMap } from "../components/TrackingMap";
 import type { EmergencyStatus } from "../domain/emergencyStatus";
+import { formatCoordinatePair } from "../domain/location";
 import { getSupabaseClient } from "../lib/supabase";
+import {
+  getLatestLiveLocation,
+  type LiveLocation,
+  type LiveLocationClient
+} from "../services/liveLocationService";
+
+const liveLocationClient = () => getSupabaseClient() as unknown as LiveLocationClient;
 
 type ReportDetail = {
   address_text: string | null;
   created_at: string;
   id: string;
+  latitude: number;
+  longitude: number;
   status: EmergencyStatus;
   type: string;
 };
@@ -17,6 +28,7 @@ type ReportDetail = {
 export function CitizenTrackingScreen() {
   const { id } = useParams();
   const [report, setReport] = useState<ReportDetail | null>(null);
+  const [liveLocation, setLiveLocation] = useState<LiveLocation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,7 +39,7 @@ export function CitizenTrackingScreen() {
     async function loadReport() {
       const { data, error: queryError } = await getSupabaseClient()
         .from("emergency_reports")
-        .select("id,type,status,address_text,created_at")
+        .select("id,type,status,address_text,created_at,latitude,longitude")
         .eq("id", id)
         .maybeSingle();
 
@@ -41,10 +53,15 @@ export function CitizenTrackingScreen() {
     }
 
     loadReport();
+    getLatestLiveLocation(liveLocationClient(), id).then(setLiveLocation).catch(() => undefined);
+
     const channel = getSupabaseClient()
       .channel(`report-${id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "emergency_reports", filter: `id=eq.${id}` }, (payload) => {
         setReport(payload.new as ReportDetail);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_locations", filter: `report_id=eq.${id}` }, (payload) => {
+        setLiveLocation(payload.new as LiveLocation);
       })
       .subscribe();
 
@@ -77,6 +94,20 @@ export function CitizenTrackingScreen() {
               <MapPin className="h-5 w-5 text-emergency-600" />
               <span>{report.address_text ?? "Ubicacion registrada"}</span>
             </div>
+          </div>
+          <TrackingMap
+            emergency={{ latitude: Number(report.latitude), longitude: Number(report.longitude) }}
+            firefighter={liveLocation}
+          />
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <p className="text-sm font-black text-ink">Ubicacion del bombero</p>
+            <p className="mt-2 text-xs font-semibold text-muted">
+              {liveLocation
+                ? `${formatCoordinatePair(liveLocation)} - actualizado ${
+                    liveLocation.updated_at ? new Date(liveLocation.updated_at).toLocaleTimeString() : "recientemente"
+                  }`
+                : "Aparecera cuando el bombero marque en camino y active su ubicacion."}
+            </p>
           </div>
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <p className="text-sm font-black text-ink">Linea de tiempo</p>
