@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { AppShell } from "../components/AppShell";
+import { InAppNotificationBanner } from "../components/InAppNotificationBanner";
 import { StatusBadge } from "../components/StatusBadge";
 import { StatusTimeline } from "../components/StatusTimeline";
 import { TrackingMap } from "../components/TrackingMap";
 import type { EmergencyStatus } from "../domain/emergencyStatus";
+import { createCitizenStatusNotification, type InAppNotification } from "../domain/firefighterNotifications";
 import { formatCoordinatePair } from "../domain/location";
 import { getSupabaseClient } from "../lib/supabase";
 import {
@@ -37,6 +39,7 @@ export function CitizenTrackingScreen() {
   const [report, setReport] = useState<ReportDetail | null>(null);
   const [liveLocation, setLiveLocation] = useState<LiveLocation | null>(null);
   const [history, setHistory] = useState<ReportStatusHistoryItem[]>([]);
+  const [notification, setNotification] = useState<InAppNotification | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -67,7 +70,13 @@ export function CitizenTrackingScreen() {
     const channel = getSupabaseClient()
       .channel(`report-${id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "emergency_reports", filter: `id=eq.${id}` }, (payload) => {
-        setReport(payload.new as ReportDetail);
+        const nextReport = payload.new as ReportDetail;
+        setReport((current) => {
+          if (current) {
+            setNotification(createCitizenStatusNotification(current.status, nextReport.status));
+          }
+          return nextReport;
+        });
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "live_locations", filter: `report_id=eq.${id}` }, (payload) => {
         setLiveLocation(payload.new as LiveLocation);
@@ -97,6 +106,7 @@ export function CitizenTrackingScreen() {
 
       {loading ? <p className="mt-6 text-sm font-semibold text-muted">Cargando seguimiento...</p> : null}
       {error ? <p className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</p> : null}
+      <InAppNotificationBanner notification={notification} onDismiss={() => setNotification(null)} />
       {report ? (
         <section className="mt-6 space-y-4">
           <div className="rounded-lg border border-emergency-100 bg-white p-5 shadow-soft">

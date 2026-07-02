@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, RefreshCw } from "lucide-react";
 import { AppShell } from "../components/AppShell";
+import { InAppNotificationBanner } from "../components/InAppNotificationBanner";
 import { StatusBadge } from "../components/StatusBadge";
+import { createFirefighterReportNotification, type InAppNotification } from "../domain/firefighterNotifications";
 import { getSupabaseClient } from "../lib/supabase";
 import {
   listActiveFirefighterReports,
@@ -14,6 +16,7 @@ const firefighterClient = () => getSupabaseClient() as unknown as FirefighterCli
 
 export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<typeof AppShell>[0]["navItems"] }) {
   const [reports, setReports] = useState<FirefighterReportSummary[]>([]);
+  const [notification, setNotification] = useState<InAppNotification | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -35,7 +38,11 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
 
     const channel = getSupabaseClient()
       .channel("firefighter-active-reports")
-      .on("postgres_changes", { event: "*", schema: "public", table: "emergency_reports" }, loadReports)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "emergency_reports" }, (payload) => {
+        setNotification(createFirefighterReportNotification(payload.new as FirefighterReportSummary));
+        loadReports();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "emergency_reports" }, loadReports)
       .subscribe();
 
     return () => {
@@ -61,6 +68,7 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
       </header>
 
       {error ? <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</p> : null}
+      <InAppNotificationBanner notification={notification} onDismiss={() => setNotification(null)} />
       {loading ? <p className="mt-6 text-sm font-semibold text-muted">Cargando reportes...</p> : null}
       {!loading && reports.length === 0 ? (
         <p className="mt-6 rounded-lg border border-slate-200 bg-white p-4 text-sm font-semibold text-muted">
