@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Camera, LocateFixed, MapPin } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { StatusBadge } from "../components/StatusBadge";
@@ -32,6 +32,7 @@ const statusHistoryClient = () => getSupabaseClient() as unknown as StatusHistor
 
 export function FirefighterReportDetailScreen() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const [report, setReport] = useState<FirefighterReportDetail | null>(null);
   const [liveLocation, setLiveLocation] = useState<LiveLocation | null>(null);
   const [history, setHistory] = useState<ReportStatusHistoryItem[]>([]);
@@ -124,11 +125,13 @@ export function FirefighterReportDetailScreen() {
   }
 
   const action = report ? getNextFirefighterStatusAction(report.status) : null;
+  const backPath = searchParams.get("from") === "historial" ? "/bombero/historial" : "/bombero/reportes";
+  const backLabel = searchParams.get("from") === "historial" ? "Volver al historial" : "Volver a reportes";
 
   return (
     <AppShell>
       <header className="flex items-center gap-3 pt-6">
-        <Link className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink shadow-soft" to="/bombero/reportes">
+        <Link aria-label={backLabel} className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink shadow-soft" to={backPath}>
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>

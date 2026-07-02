@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { getSupabaseClient } from "../lib/supabase";
 import { createAuthService } from "../services/authService";
@@ -67,6 +67,9 @@ export function FirefighterProfileScreen({ navItems }: { navItems: Parameters<ty
           <ProfileRow label="Nombre" value={`${profile.name} ${profile.last_name}`} />
           <ProfileRow label="Codigo" value={profile.firefighter_code} />
           <ProfileRow label="Telefono" value={profile.phone} />
+          <Link className="btn-secondary mt-5" to="/bombero/historial">
+            Historial de mi compania
+          </Link>
           <button className="btn-secondary mt-5" onClick={signOut} type="button">
             Cerrar sesion
           </button>

@@ -65,6 +65,19 @@ export async function listActiveFirefighterReports(client: FirefighterClient): P
   return (data ?? []) as FirefighterReportSummary[];
 }
 
+export async function listCompanyFirefighterHistory(client: FirefighterClient): Promise<FirefighterReportSummary[]> {
+  if (!client.from) throw new Error("Cliente Supabase incompleto.");
+
+  const { data, error } = await client
+    .from("emergency_reports")
+    .select(reportColumns)
+    .eq("status", "FINALIZADO")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as FirefighterReportSummary[];
+}
+
 export async function getFirefighterReportDetail(
   client: FirefighterClient,
   reportId: string

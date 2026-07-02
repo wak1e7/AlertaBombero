@@ -23,6 +23,7 @@ import { CitizenHistoryScreen } from "./screens/CitizenHistoryScreen";
 import { CitizenReportScreen } from "./screens/CitizenReportScreen";
 import { CitizenTrackingScreen } from "./screens/CitizenTrackingScreen";
 import { FirefighterProfileScreen } from "./screens/FirefighterProfileScreen";
+import { FirefighterHistoryScreen } from "./screens/FirefighterHistoryScreen";
 import { FirefighterReportDetailScreen } from "./screens/FirefighterReportDetailScreen";
 import { FirefighterReportsScreen } from "./screens/FirefighterReportsScreen";
 import { createAuthService } from "./services/authService";
@@ -111,6 +112,14 @@ export function App() {
           element={
             <ProtectedRoute role="firefighter" loginPath="/bombero/login">
               <FirefighterReportDetailScreen />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bombero/historial"
+          element={
+            <ProtectedRoute role="firefighter" loginPath="/bombero/login">
+              <FirefighterHistoryScreen navItems={firefighterNavItems} />
             </ProtectedRoute>
           }
         />

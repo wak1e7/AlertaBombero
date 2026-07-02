@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   getFirefighterReportDetail,
+  listCompanyFirefighterHistory,
   listActiveFirefighterReports,
   updateFirefighterReportStatus
 } from "./firefighterService";
@@ -29,6 +30,22 @@ describe("firefighter service", () => {
 
     expect(client.from).toHaveBeenCalledWith("emergency_reports");
     expect(query.in).toHaveBeenCalledWith("status", ["ENVIADO", "RECIBIDO", "EN_CAMINO", "ATENDIENDO"]);
+    expect(query.order).toHaveBeenCalledWith("created_at", { ascending: false });
+    expect(result).toEqual(reports);
+  });
+
+  it("lists finalized company reports as firefighter history", async () => {
+    const reports = [
+      { id: "r3", status: "FINALIZADO", type: "INCENDIO" },
+      { id: "r4", status: "FINALIZADO", type: "RESCATE" }
+    ];
+    const query = createQueryMock(reports);
+    const client = { from: vi.fn(() => query) };
+
+    const result = await listCompanyFirefighterHistory(client);
+
+    expect(client.from).toHaveBeenCalledWith("emergency_reports");
+    expect(query.eq).toHaveBeenCalledWith("status", "FINALIZADO");
     expect(query.order).toHaveBeenCalledWith("created_at", { ascending: false });
     expect(result).toEqual(reports);
   });
