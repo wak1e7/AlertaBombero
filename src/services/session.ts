@@ -48,3 +48,8 @@ export function getPendingAuth(): PendingAuth | null {
 export function clearPendingAuth() {
   sessionStorage.removeItem(PENDING_AUTH_KEY);
 }
+
+export function clearLocalSessionState() {
+  clearActiveSessionId();
+  clearPendingAuth();
+}

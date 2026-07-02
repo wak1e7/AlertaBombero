@@ -15,8 +15,10 @@ import { AppShell } from "./components/AppShell";
 import { AuthCard } from "./components/AuthCard";
 import { EmergencyButton } from "./components/EmergencyButton";
 import { StatusBadge } from "./components/StatusBadge";
+import { demoCredentials } from "./domain/demoCredentials";
 import { DEMO_OTP_CODE, verifySimulatedOtp } from "./domain/otp";
 import { getSupabaseClient } from "./lib/supabase";
+import { CitizenProfileScreen } from "./screens/CitizenProfileScreen";
 import { CitizenHistoryScreen } from "./screens/CitizenHistoryScreen";
 import { CitizenReportScreen } from "./screens/CitizenReportScreen";
 import { CitizenTrackingScreen } from "./screens/CitizenTrackingScreen";
@@ -74,6 +76,14 @@ export function App() {
           element={
             <ProtectedRoute role="citizen" loginPath="/ciudadano/login">
               <CitizenHistoryScreen navItems={citizenNavItems} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ciudadano/perfil"
+          element={
+            <ProtectedRoute role="citizen" loginPath="/ciudadano/login">
+              <CitizenProfileScreen navItems={citizenNavItems} />
             </ProtectedRoute>
           }
         />
@@ -242,6 +252,12 @@ function CitizenLoginScreen() {
             placeholder="Ingresa tu contrasena"
           />
           <FormError message={error} />
+          <DemoHint
+            lines={[
+              `Demo: ${demoCredentials.citizen.phone}`,
+              `Contrasena: ${demoCredentials.citizen.password}`
+            ]}
+          />
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
@@ -310,6 +326,12 @@ function CitizenRegisterScreen() {
             onChange={(password) => setForm((current) => ({ ...current, password }))}
           />
           <FormError message={error} />
+          <DemoHint
+            lines={[
+              `Demo: ${demoCredentials.firefighters[0].code}`,
+              `Contrasena: ${demoCredentials.firefighters[0].password}`
+            ]}
+          />
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Creando..." : "Continuar"}
           </button>
@@ -550,6 +572,17 @@ function FormError({ message }: { message: string }) {
   if (!message) return null;
 
   return <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{message}</p>;
+}
+
+function DemoHint({ lines }: { lines: string[] }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs font-semibold text-muted">
+      {lines.map((line) => (
+        <p key={line}>{line}</p>
+      ))}
+      <p>OTP: {DEMO_OTP_CODE}</p>
+    </div>
+  );
 }
 
 function errorMessage(caught: unknown) {
