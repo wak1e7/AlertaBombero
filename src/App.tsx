@@ -1,0 +1,569 @@
+import type React from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  Bell,
+  ClipboardList,
+  Flame,
+  History,
+  Home,
+  ShieldCheck,
+  UserRound,
+  UsersRound
+} from "lucide-react";
+import { AppShell } from "./components/AppShell";
+import { AuthCard } from "./components/AuthCard";
+import { EmergencyButton } from "./components/EmergencyButton";
+import { StatusBadge } from "./components/StatusBadge";
+import { DEMO_OTP_CODE, verifySimulatedOtp } from "./domain/otp";
+import { getSupabaseClient } from "./lib/supabase";
+import { createAuthService } from "./services/authService";
+import {
+  clearActiveSessionId,
+  clearPendingAuth,
+  createActiveSessionId,
+  getActiveSessionId,
+  getPendingAuth,
+  saveActiveSessionId,
+  savePendingAuth
+} from "./services/session";
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<RoleAccessScreen />} />
+        <Route path="/ciudadano/login" element={<CitizenLoginScreen />} />
+        <Route path="/ciudadano/registro" element={<CitizenRegisterScreen />} />
+        <Route path="/ciudadano/otp" element={<OtpScreen expectedRole="citizen" />} />
+        <Route path="/ciudadano/bienvenida" element={<WelcomeScreen role="citizen" />} />
+        <Route
+          path="/ciudadano/inicio"
+          element={
+            <ProtectedRoute role="citizen" loginPath="/ciudadano/login">
+              <CitizenHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/bombero/login" element={<FirefighterLoginScreen />} />
+        <Route path="/bombero/otp" element={<OtpScreen expectedRole="firefighter" />} />
+        <Route path="/bombero/bienvenida" element={<WelcomeScreen role="firefighter" />} />
+        <Route
+          path="/bombero/inicio"
+          element={
+            <ProtectedRoute role="firefighter" loginPath="/bombero/login">
+              <FirefighterHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+function RoleAccessScreen() {
+  return (
+    <AppShell compact>
+      <section className="flex min-h-dvh flex-col justify-between px-5 py-8">
+        <div className="pt-7 text-center">
+          <BrandMark large />
+          <h1 className="mt-5 text-3xl font-black text-emergency-600">AlertaBombero</h1>
+          <p className="mt-2 text-sm font-medium text-muted">Reporta emergencias en tiempo real</p>
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-center text-sm font-semibold text-ink">Como deseas continuar?</p>
+          <RoleCard
+            href="/ciudadano/login"
+            icon={<UsersRound className="h-7 w-7" />}
+            title="Soy ciudadano"
+            description="Reporta emergencias y haz seguimiento."
+          />
+          <RoleCard
+            href="/bombero/login"
+            icon={<ShieldCheck className="h-7 w-7" />}
+            title="Soy bombero"
+            description="Accede al panel operativo."
+            featured
+          />
+        </div>
+
+        <p className="text-center text-xs font-medium text-muted">
+          Ante una emergencia, llama al 116 si no tienes internet.
+        </p>
+      </section>
+    </AppShell>
+  );
+}
+
+function RoleCard({
+  href,
+  icon,
+  title,
+  description,
+  featured = false
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  featured?: boolean;
+}) {
+  return (
+    <Link
+      to={href}
+      className={`flex items-center gap-4 rounded-lg border p-4 transition active:scale-[0.99] ${
+        featured
+          ? "border-emergency-600 bg-emergency-600 text-white shadow-soft"
+          : "border-emergency-100 bg-white text-ink"
+      }`}
+    >
+      <span
+        className={`grid h-12 w-12 place-items-center rounded-full ${
+          featured ? "bg-white/15" : "bg-emergency-50 text-emergency-600"
+        }`}
+      >
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-base font-bold">{title}</span>
+        <span className={`mt-1 block text-xs ${featured ? "text-white/85" : "text-muted"}`}>
+          {description}
+        </span>
+      </span>
+      <span aria-hidden="true" className="text-xl">
+        &gt;
+      </span>
+    </Link>
+  );
+}
+
+function CitizenLoginScreen() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ phone: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const result = await createAuthService(getSupabaseClient()).loginCitizen(form);
+      savePendingAuth({
+        expiresAt: result.otp.expiresAt,
+        profileId: result.profileId,
+        purpose: result.otp.purpose,
+        role: result.role,
+        userIdentifier: result.otp.userIdentifier,
+        welcomePath: result.welcomePath
+      });
+      navigate("/ciudadano/otp");
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <AppShell>
+      <AuthCard title="Iniciar sesion" subtitle="Accede a tu cuenta ciudadana">
+        <form className="space-y-4" onSubmit={onSubmit}>
+          <TextInput
+            label="Telefono"
+            value={form.phone}
+            onChange={(phone) => setForm((current) => ({ ...current, phone }))}
+            placeholder="+51 999 999 999"
+          />
+          <TextInput
+            label="Contrasena"
+            type="password"
+            value={form.password}
+            onChange={(password) => setForm((current) => ({ ...current, password }))}
+            placeholder="Ingresa tu contrasena"
+          />
+          <FormError message={error} />
+          <button className="btn-primary" disabled={loading} type="submit">
+            {loading ? "Ingresando..." : "Ingresar"}
+          </button>
+          <p className="text-center text-xs text-muted">
+            No tienes cuenta?{" "}
+            <Link className="font-bold text-emergency-600" to="/ciudadano/registro">
+              Crear cuenta
+            </Link>
+          </p>
+        </form>
+      </AuthCard>
+    </AppShell>
+  );
+}
+
+function CitizenRegisterScreen() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ name: "", lastName: "", phone: "", dni: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const result = await createAuthService(getSupabaseClient()).registerCitizen(form);
+      savePendingAuth({
+        expiresAt: result.otp.expiresAt,
+        profileId: result.profileId,
+        purpose: result.otp.purpose,
+        role: result.role,
+        userIdentifier: result.otp.userIdentifier,
+        welcomePath: result.welcomePath
+      });
+      navigate("/ciudadano/otp");
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <AppShell>
+      <AuthCard title="Crear cuenta" subtitle="Registro ciudadano seguro">
+        <form className="space-y-3" onSubmit={onSubmit}>
+          <TextInput label="Nombres" value={form.name} onChange={(name) => setForm((current) => ({ ...current, name }))} />
+          <TextInput
+            label="Apellidos"
+            value={form.lastName}
+            onChange={(lastName) => setForm((current) => ({ ...current, lastName }))}
+          />
+          <TextInput
+            label="Telefono"
+            value={form.phone}
+            onChange={(phone) => setForm((current) => ({ ...current, phone }))}
+            placeholder="+51 999 999 999"
+          />
+          <TextInput label="DNI" value={form.dni} onChange={(dni) => setForm((current) => ({ ...current, dni }))} />
+          <TextInput
+            label="Contrasena"
+            type="password"
+            value={form.password}
+            onChange={(password) => setForm((current) => ({ ...current, password }))}
+          />
+          <FormError message={error} />
+          <button className="btn-primary" disabled={loading} type="submit">
+            {loading ? "Creando..." : "Continuar"}
+          </button>
+        </form>
+      </AuthCard>
+    </AppShell>
+  );
+}
+
+function FirefighterLoginScreen() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ firefighterCode: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const result = await createAuthService(getSupabaseClient()).loginFirefighter(form);
+      savePendingAuth({
+        expiresAt: result.otp.expiresAt,
+        profileId: result.profileId,
+        purpose: result.otp.purpose,
+        role: result.role,
+        userIdentifier: result.otp.userIdentifier,
+        welcomePath: result.welcomePath
+      });
+      navigate("/bombero/otp");
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <AppShell>
+      <AuthCard title="Acceso bombero" subtitle="Ingresa tus credenciales para continuar">
+        <form className="space-y-4" onSubmit={onSubmit}>
+          <TextInput
+            label="Codigo de bombero"
+            value={form.firefighterCode}
+            onChange={(firefighterCode) => setForm((current) => ({ ...current, firefighterCode }))}
+            placeholder="B-204"
+          />
+          <TextInput
+            label="Contrasena"
+            type="password"
+            value={form.password}
+            onChange={(password) => setForm((current) => ({ ...current, password }))}
+          />
+          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs font-medium text-amber-800">
+            El bombero debe existir precargado. La cuenta Auth se vincula al codigo operativo.
+          </p>
+          <FormError message={error} />
+          <button className="btn-primary" disabled={loading} type="submit">
+            {loading ? "Validando..." : "Ingresar"}
+          </button>
+        </form>
+      </AuthCard>
+    </AppShell>
+  );
+}
+
+function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }) {
+  const navigate = useNavigate();
+  const pending = getPendingAuth();
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!pending || pending.role !== expectedRole) {
+      navigate(expectedRole === "citizen" ? "/ciudadano/login" : "/bombero/login", { replace: true });
+    }
+  }, [expectedRole, navigate, pending]);
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!pending) return;
+
+    const verification = verifySimulatedOtp({ ...pending, code: DEMO_OTP_CODE }, code);
+    if (!verification.ok) {
+      setError(verification.reason === "expired" ? "El codigo expiro. Vuelve a iniciar sesion." : "Codigo incorrecto.");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const sessionId = createActiveSessionId();
+      await createAuthService(getSupabaseClient()).markPhoneVerified(pending.profileId, sessionId);
+      saveActiveSessionId(sessionId);
+      clearPendingAuth();
+      navigate(pending.welcomePath);
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <AppShell>
+      <AuthCard title="Verificar identidad" subtitle="Ingresa el codigo de seguridad">
+        <form className="space-y-4" onSubmit={onSubmit}>
+          <p className="rounded-lg border border-emergency-100 bg-emergency-50 p-3 text-center text-xs font-semibold text-emergency-700">
+            OTP simulado para demo: {DEMO_OTP_CODE}
+          </p>
+          <TextInput label="Codigo OTP" value={code} onChange={setCode} placeholder="116116" />
+          <FormError message={error} />
+          <button className="btn-primary" disabled={loading} type="submit">
+            {loading ? "Verificando..." : "Verificar"}
+          </button>
+        </form>
+      </AuthCard>
+    </AppShell>
+  );
+}
+
+function ProtectedRoute({
+  children,
+  loginPath,
+  role
+}: {
+  children: React.ReactNode;
+  loginPath: string;
+  role: "citizen" | "firefighter";
+}) {
+  const [state, setState] = useState<"loading" | "allowed" | "denied">("loading");
+
+  useEffect(() => {
+    let alive = true;
+
+    async function checkSession() {
+      const client = getSupabaseClient();
+      const { data } = await client.auth.getSession();
+      const authUserId = data.session?.user.id;
+      const activeSessionId = getActiveSessionId();
+
+      if (!authUserId || !activeSessionId) {
+        if (alive) setState("denied");
+        return;
+      }
+
+      const { data: profile } = await client
+        .from("profiles")
+        .select("role, active_session_id, phone_verified")
+        .eq("auth_user_id", authUserId)
+        .maybeSingle();
+
+      if (profile?.role === role && profile.phone_verified && profile.active_session_id === activeSessionId) {
+        if (alive) setState("allowed");
+      } else {
+        clearActiveSessionId();
+        if (alive) setState("denied");
+      }
+    }
+
+    checkSession();
+    window.addEventListener("focus", checkSession);
+
+    return () => {
+      alive = false;
+      window.removeEventListener("focus", checkSession);
+    };
+  }, [role]);
+
+  if (state === "loading") {
+    return (
+      <AppShell>
+        <div className="grid min-h-dvh place-items-center text-sm font-semibold text-muted">Validando sesion...</div>
+      </AppShell>
+    );
+  }
+
+  if (state === "denied") {
+    return <Navigate to={loginPath} replace />;
+  }
+
+  return children;
+}
+
+function WelcomeScreen({ role }: { role: "citizen" | "firefighter" }) {
+  const href = role === "firefighter" ? "/bombero/inicio" : "/ciudadano/inicio";
+  const label = role === "firefighter" ? "Ir al panel" : "Ir al inicio";
+
+  return (
+    <AppShell>
+      <div className="grid min-h-dvh place-items-center px-5">
+        <div className="text-center">
+          <BrandMark large />
+          <h1 className="mt-5 text-3xl font-black text-emergency-600">
+            Bienvenido, {role === "firefighter" ? "bombero" : "ciudadano"}
+          </h1>
+          <p className="mt-3 text-sm text-muted">Tu cuenta esta verificada para continuar.</p>
+          <Link className="btn-primary mt-8" to={href}>
+            {label}
+          </Link>
+        </div>
+      </div>
+    </AppShell>
+  );
+}
+
+function TextInput({
+  label,
+  onChange,
+  placeholder,
+  type = "text",
+  value
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+  value: string;
+}) {
+  return (
+    <label className="block text-left text-sm font-semibold text-ink">
+      {label}
+      <input
+        className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-medium outline-none transition focus:border-emergency-500 focus:ring-4 focus:ring-emergency-100"
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        type={type}
+        value={value}
+      />
+    </label>
+  );
+}
+
+function FormError({ message }: { message: string }) {
+  if (!message) return null;
+
+  return <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{message}</p>;
+}
+
+function errorMessage(caught: unknown) {
+  return caught instanceof Error ? caught.message : "No se pudo completar la accion.";
+}
+
+function CitizenHome() {
+  return (
+    <AppShell navItems={citizenNavItems}>
+      <DashboardHeader eyebrow="Ciudadano" title="Hola, ciudadano" />
+      <section className="mt-5 rounded-lg border border-emergency-100 bg-white p-4 shadow-soft">
+        <p className="text-sm font-semibold text-ink">Necesitas ayuda de emergencia?</p>
+        <p className="mt-1 text-xs text-muted">Inicia un reporte rapido y seguro.</p>
+        <div className="mt-8 flex justify-center">
+          <EmergencyButton />
+        </div>
+      </section>
+    </AppShell>
+  );
+}
+
+function FirefighterHome() {
+  return (
+    <AppShell navItems={firefighterNavItems}>
+      <DashboardHeader eyebrow="Bombero" title="Panel operativo" />
+      <section className="mt-5 rounded-lg border border-emergency-100 bg-white p-4 shadow-soft">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-ink">Compania asignada</p>
+            <p className="mt-1 text-xs text-muted">Estado operativo en linea</p>
+          </div>
+          <StatusBadge status="RECIBIDO" />
+        </div>
+        <div className="mt-8 flex justify-center">
+          <EmergencyButton />
+        </div>
+      </section>
+    </AppShell>
+  );
+}
+
+function DashboardHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <header className="pt-6">
+      <div className="flex items-center justify-between">
+        <BrandMark />
+        <Bell className="h-5 w-5 text-emergency-600" />
+      </div>
+      <p className="mt-6 text-xs font-bold uppercase tracking-wide text-emergency-600">{eyebrow}</p>
+      <h1 className="mt-1 text-2xl font-black text-ink">{title}</h1>
+    </header>
+  );
+}
+
+function BrandMark({ large = false }: { large?: boolean }) {
+  return (
+    <div className={`mx-auto grid place-items-center rounded-full bg-emergency-50 ${large ? "h-24 w-24" : "h-11 w-11"}`}>
+      <Flame className={`${large ? "h-14 w-14" : "h-6 w-6"} text-emergency-600`} />
+    </div>
+  );
+}
+
+const citizenNavItems = [
+  { href: "/ciudadano/inicio", label: "Inicio", icon: Home },
+  { href: "/ciudadano/historial", label: "Reportes", icon: History },
+  { href: "/ciudadano/perfil", label: "Perfil", icon: UserRound }
+];
+
+const firefighterNavItems = [
+  { href: "/bombero/inicio", label: "Inicio", icon: Home },
+  { href: "/bombero/reportes", label: "Reportes", icon: ClipboardList },
+  { href: "/bombero/perfil", label: "Perfil", icon: UserRound }
+];

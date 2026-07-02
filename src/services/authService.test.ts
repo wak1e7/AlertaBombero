@@ -1,0 +1,153 @@
+import { describe, expect, it, vi } from "vitest";
+import { createAuthService } from "./authService";
+
+function createClient() {
+  return {
+    auth: {
+      signUp: vi.fn().mockResolvedValue({ data: { user: { id: "auth-citizen" } }, error: null }),
+      signInWithPassword: vi.fn().mockResolvedValue({ data: { user: { id: "auth-user" } }, error: null }),
+      signOut: vi.fn().mockResolvedValue({ error: null })
+    },
+    rpc: vi.fn((name: string) => {
+      if (name === "link_firefighter_profile") {
+        return Promise.resolve({
+          data: {
+            id: "firefighter-profile",
+            role: "firefighter",
+            phone: "+51900111222",
+            active: true
+          },
+          error: null
+        });
+      }
+
+      return Promise.resolve({
+        data: { id: "profile-id", role: "citizen", active: true },
+        error: null
+      });
+    }),
+    functions: {
+      invoke: vi.fn((name: string) => {
+        if (name === "register-citizen") {
+          return Promise.resolve({
+            data: {
+              email: "c-51999888777@ciudadano.alertabombero.app",
+              phone: "+51999888777",
+              profileId: "profile-id",
+              role: "citizen"
+            },
+            error: null
+          });
+        }
+
+        return Promise.resolve({
+          data: {
+            email: "b-204@bombero.alertabombero.app",
+            profileId: "firefighter-profile",
+            role: "firefighter"
+          },
+          error: null
+        });
+      })
+    },
+    from: vi.fn((table: string) => ({
+      insert: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: table === "profiles" ? { id: "profile-id", role: "citizen" } : null,
+            error: null
+          })
+        })
+      }),
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: {
+              id: "firefighter-profile",
+              role: "firefighter",
+              phone: "+51900111222",
+              active: true
+            },
+            error: null
+          })
+        })
+      }),
+      update: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ error: null })
+      })
+    }))
+  };
+}
+
+describe("authService", () => {
+  it("registers a citizen using a technical Supabase auth email and creates a profile", async () => {
+    const client = createClient();
+    const service = createAuthService(client);
+
+    const result = await service.registerCitizen({
+      name: "Juan",
+      lastName: "Perez",
+      phone: "999888777",
+      dni: "12345678",
+      password: "seguro123"
+    });
+
+    expect(client.functions.invoke).toHaveBeenCalledWith("register-citizen", {
+      body: {
+        name: "Juan",
+        lastName: "Perez",
+        phone: "+51999888777",
+        dni: "12345678",
+        password: "seguro123"
+      }
+    });
+    expect(client.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: "c-51999888777@ciudadano.alertabombero.app",
+      password: "seguro123"
+    });
+    expect(result.nextStep).toBe("otp");
+    expect(result.otp.userIdentifier).toBe("+51999888777");
+  });
+
+  it("starts firefighter login by checking the preloaded profile and signing in", async () => {
+    const client = createClient();
+    const service = createAuthService(client);
+
+    const result = await service.loginFirefighter({
+      firefighterCode: "B-204",
+      password: "bombero123"
+    });
+
+    expect(client.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: "b-204@bombero.alertabombero.app",
+      password: "bombero123"
+    });
+    expect(client.rpc).toHaveBeenCalledWith("link_firefighter_profile", {
+      target_firefighter_code: "B-204"
+    });
+    expect(result.nextStep).toBe("otp");
+    expect(result.otp.purpose).toBe("firefighter_login");
+  });
+
+  it("provisions a firefighter auth user on first login when the seed profile exists", async () => {
+    const client = createClient();
+    client.auth.signInWithPassword.mockResolvedValueOnce({
+      data: null,
+      error: new Error("Invalid login credentials")
+    });
+    const service = createAuthService(client);
+
+    const result = await service.loginFirefighter({
+      firefighterCode: "B-204",
+      password: "bombero123"
+    });
+
+    expect(client.functions.invoke).toHaveBeenCalledWith("provision-firefighter", {
+      body: {
+        firefighterCode: "B-204",
+        password: "bombero123"
+      }
+    });
+    expect(result.profileId).toBe("firefighter-profile");
+  });
+});
