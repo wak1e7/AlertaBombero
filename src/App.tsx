@@ -17,6 +17,9 @@ import { EmergencyButton } from "./components/EmergencyButton";
 import { StatusBadge } from "./components/StatusBadge";
 import { DEMO_OTP_CODE, verifySimulatedOtp } from "./domain/otp";
 import { getSupabaseClient } from "./lib/supabase";
+import { CitizenHistoryScreen } from "./screens/CitizenHistoryScreen";
+import { CitizenReportScreen } from "./screens/CitizenReportScreen";
+import { CitizenTrackingScreen } from "./screens/CitizenTrackingScreen";
 import { createAuthService } from "./services/authService";
 import {
   clearActiveSessionId,
@@ -42,6 +45,32 @@ export function App() {
           element={
             <ProtectedRoute role="citizen" loginPath="/ciudadano/login">
               <CitizenHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ciudadano/reporte"
+          element={
+            <ProtectedRoute role="citizen" loginPath="/ciudadano/login">
+              <CitizenReportScreen />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/ciudadano/reporte/evidencia" element={<Navigate to="/ciudadano/reporte" replace />} />
+        <Route path="/ciudadano/reporte/resumen" element={<Navigate to="/ciudadano/reporte" replace />} />
+        <Route
+          path="/ciudadano/seguimiento/:id"
+          element={
+            <ProtectedRoute role="citizen" loginPath="/ciudadano/login">
+              <CitizenTrackingScreen />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ciudadano/historial"
+          element={
+            <ProtectedRoute role="citizen" loginPath="/ciudadano/login">
+              <CitizenHistoryScreen navItems={citizenNavItems} />
             </ProtectedRoute>
           }
         />
@@ -501,6 +530,8 @@ function errorMessage(caught: unknown) {
 }
 
 function CitizenHome() {
+  const navigate = useNavigate();
+
   return (
     <AppShell navItems={citizenNavItems}>
       <DashboardHeader eyebrow="Ciudadano" title="Hola, ciudadano" />
@@ -508,7 +539,7 @@ function CitizenHome() {
         <p className="text-sm font-semibold text-ink">Necesitas ayuda de emergencia?</p>
         <p className="mt-1 text-xs text-muted">Inicia un reporte rapido y seguro.</p>
         <div className="mt-8 flex justify-center">
-          <EmergencyButton />
+          <EmergencyButton onClick={() => navigate("/ciudadano/reporte")} />
         </div>
       </section>
     </AppShell>

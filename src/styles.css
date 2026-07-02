@@ -28,4 +28,8 @@ a {
   .btn-primary {
     @apply inline-flex w-full items-center justify-center rounded-lg bg-emergency-600 px-4 py-3 text-sm font-bold text-white shadow-soft transition active:scale-[0.99];
   }
+
+  .btn-secondary {
+    @apply inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-ink shadow-soft transition active:scale-[0.99] disabled:opacity-60;
+  }
 }
