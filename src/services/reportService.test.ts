@@ -64,8 +64,10 @@ describe("report service", () => {
       upsert: false
     });
     expect(insert).toHaveBeenCalledWith({
-      file_path: "report-1/1700000000000-incendio.jpg",
-      file_type: "image/jpeg",
+      file_name: "incendio.jpg",
+      file_size: evidence.size,
+      file_type: "image",
+      file_url: "report-1/1700000000000-incendio.jpg",
       report_id: "report-1"
     });
     expect(result).toEqual({ reportId: "report-1", status: "ENVIADO" });

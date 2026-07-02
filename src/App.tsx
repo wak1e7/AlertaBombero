@@ -20,6 +20,9 @@ import { getSupabaseClient } from "./lib/supabase";
 import { CitizenHistoryScreen } from "./screens/CitizenHistoryScreen";
 import { CitizenReportScreen } from "./screens/CitizenReportScreen";
 import { CitizenTrackingScreen } from "./screens/CitizenTrackingScreen";
+import { FirefighterProfileScreen } from "./screens/FirefighterProfileScreen";
+import { FirefighterReportDetailScreen } from "./screens/FirefighterReportDetailScreen";
+import { FirefighterReportsScreen } from "./screens/FirefighterReportsScreen";
 import { createAuthService } from "./services/authService";
 import {
   clearActiveSessionId,
@@ -82,6 +85,30 @@ export function App() {
           element={
             <ProtectedRoute role="firefighter" loginPath="/bombero/login">
               <FirefighterHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bombero/reportes"
+          element={
+            <ProtectedRoute role="firefighter" loginPath="/bombero/login">
+              <FirefighterReportsScreen navItems={firefighterNavItems} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bombero/reportes/:id"
+          element={
+            <ProtectedRoute role="firefighter" loginPath="/bombero/login">
+              <FirefighterReportDetailScreen />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bombero/perfil"
+          element={
+            <ProtectedRoute role="firefighter" loginPath="/bombero/login">
+              <FirefighterProfileScreen navItems={firefighterNavItems} />
             </ProtectedRoute>
           }
         />

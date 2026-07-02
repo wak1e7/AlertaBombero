@@ -55,8 +55,10 @@ export async function createEmergencyReport(client: SupabaseReportClient, draft:
   const { error: evidenceError } = await client
     .from("report_evidence")
     .insert({
-      file_path: filePath,
-      file_type: draft.evidence.type,
+      file_name: draft.evidence.name,
+      file_size: draft.evidence.size,
+      file_type: draft.evidence.type.startsWith("video/") ? "video" : "image",
+      file_url: filePath,
       report_id: report.id
     })
     .select("id")
