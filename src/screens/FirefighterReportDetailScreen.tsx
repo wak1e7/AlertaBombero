@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Camera, LocateFixed, MapPin } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { StatusBadge } from "../components/StatusBadge";
+import { StatusTimeline } from "../components/StatusTimeline";
 import { TrackingMap } from "../components/TrackingMap";
 import { getNextFirefighterStatusAction } from "../domain/emergencyStatus";
 import { formatCoordinatePair } from "../domain/location";
@@ -19,14 +20,21 @@ import {
   type LiveLocation,
   type LiveLocationClient
 } from "../services/liveLocationService";
+import {
+  listReportStatusHistory,
+  type ReportStatusHistoryItem,
+  type StatusHistoryClient
+} from "../services/statusHistoryService";
 
 const firefighterClient = () => getSupabaseClient() as unknown as FirefighterClient;
 const liveLocationClient = () => getSupabaseClient() as unknown as LiveLocationClient;
+const statusHistoryClient = () => getSupabaseClient() as unknown as StatusHistoryClient;
 
 export function FirefighterReportDetailScreen() {
   const { id } = useParams();
   const [report, setReport] = useState<FirefighterReportDetail | null>(null);
   const [liveLocation, setLiveLocation] = useState<LiveLocation | null>(null);
+  const [history, setHistory] = useState<ReportStatusHistoryItem[]>([]);
   const [tracking, setTracking] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,6 +47,7 @@ export function FirefighterReportDetailScreen() {
     try {
       setReport(await getFirefighterReportDetail(firefighterClient(), id));
       setLiveLocation(await getLatestLiveLocation(liveLocationClient(), id));
+      setHistory(await listReportStatusHistory(statusHistoryClient(), id));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No se pudo cargar el detalle.");
     } finally {
@@ -53,6 +62,9 @@ export function FirefighterReportDetailScreen() {
     const channel = getSupabaseClient()
       .channel(`firefighter-report-${id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "emergency_reports", filter: `id=eq.${id}` }, loadReport)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "report_status_history", filter: `report_id=eq.${id}` }, (payload) => {
+        setHistory((current) => [...current, payload.new as ReportStatusHistoryItem]);
+      })
       .subscribe();
 
     return () => {
@@ -185,6 +197,8 @@ export function FirefighterReportDetailScreen() {
               ))}
             </div>
           </div>
+
+          <StatusTimeline items={history} />
 
           {action ? (
             <button className="btn-primary" disabled={saving} onClick={advanceStatus} type="button">

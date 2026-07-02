@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { StatusBadge } from "../components/StatusBadge";
+import { StatusTimeline } from "../components/StatusTimeline";
 import { TrackingMap } from "../components/TrackingMap";
 import type { EmergencyStatus } from "../domain/emergencyStatus";
 import { formatCoordinatePair } from "../domain/location";
@@ -12,8 +13,14 @@ import {
   type LiveLocation,
   type LiveLocationClient
 } from "../services/liveLocationService";
+import {
+  listReportStatusHistory,
+  type ReportStatusHistoryItem,
+  type StatusHistoryClient
+} from "../services/statusHistoryService";
 
 const liveLocationClient = () => getSupabaseClient() as unknown as LiveLocationClient;
+const statusHistoryClient = () => getSupabaseClient() as unknown as StatusHistoryClient;
 
 type ReportDetail = {
   address_text: string | null;
@@ -29,6 +36,7 @@ export function CitizenTrackingScreen() {
   const { id } = useParams();
   const [report, setReport] = useState<ReportDetail | null>(null);
   const [liveLocation, setLiveLocation] = useState<LiveLocation | null>(null);
+  const [history, setHistory] = useState<ReportStatusHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -54,6 +62,7 @@ export function CitizenTrackingScreen() {
 
     loadReport();
     getLatestLiveLocation(liveLocationClient(), id).then(setLiveLocation).catch(() => undefined);
+    listReportStatusHistory(statusHistoryClient(), id).then(setHistory).catch(() => undefined);
 
     const channel = getSupabaseClient()
       .channel(`report-${id}`)
@@ -62,6 +71,9 @@ export function CitizenTrackingScreen() {
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "live_locations", filter: `report_id=eq.${id}` }, (payload) => {
         setLiveLocation(payload.new as LiveLocation);
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "report_status_history", filter: `report_id=eq.${id}` }, (payload) => {
+        setHistory((current) => [...current, payload.new as ReportStatusHistoryItem]);
       })
       .subscribe();
 
@@ -109,30 +121,12 @@ export function CitizenTrackingScreen() {
                 : "Aparecera cuando el bombero marque en camino y active su ubicacion."}
             </p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <p className="text-sm font-black text-ink">Linea de tiempo</p>
-            <ol className="mt-4 space-y-3">
-              <TimelineItem active label="Reporte enviado" />
-              <TimelineItem active={["RECIBIDO", "EN_CAMINO", "ATENDIENDO", "FINALIZADO"].includes(report.status)} label="Compania notificada" />
-              <TimelineItem active={["EN_CAMINO", "ATENDIENDO", "FINALIZADO"].includes(report.status)} label="Bombero en camino" />
-              <TimelineItem active={["ATENDIENDO", "FINALIZADO"].includes(report.status)} label="Atencion en curso" />
-              <TimelineItem active={report.status === "FINALIZADO"} label="Emergencia finalizada" />
-            </ol>
-          </div>
+          <StatusTimeline items={history} />
           <Link className="btn-secondary" to="/ciudadano/historial">
             Ver historial
           </Link>
         </section>
       ) : null}
     </AppShell>
-  );
-}
-
-function TimelineItem({ active, label }: { active: boolean; label: string }) {
-  return (
-    <li className="flex items-center gap-3">
-      <span className={`h-3 w-3 rounded-full ${active ? "bg-emergency-600" : "bg-slate-200"}`} />
-      <span className={`text-sm font-bold ${active ? "text-ink" : "text-muted"}`}>{label}</span>
-    </li>
   );
 }
