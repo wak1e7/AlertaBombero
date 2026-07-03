@@ -9,6 +9,7 @@ import {
   type PhoneLoginInput
 } from "../domain/auth";
 import { createSimulatedOtpChallenge, type SimulatedOtpChallenge } from "../domain/otp";
+import type { AuthMode } from "../lib/env";
 
 type QueryResult<T = any> = PromiseLike<{ data: T; error: any }>;
 
@@ -33,9 +34,17 @@ type AuthStartResult = {
   welcomePath: string;
 };
 
-export function createAuthService(client: AuthClient) {
+type AuthServiceOptions = {
+  authMode?: AuthMode;
+};
+
+export function createAuthService(client: AuthClient, options: AuthServiceOptions = {}) {
+  const authMode = options.authMode ?? "demo";
+
   return {
     async registerCitizen(input: CitizenRegistrationInput): Promise<AuthStartResult> {
+      ensureDemoAuthMode(authMode);
+
       const parsed = validateCitizenRegistration(input);
       if (!parsed.success) {
         throw new Error(parsed.error.issues[0]?.message ?? "Datos de registro invalidos.");
@@ -72,6 +81,8 @@ export function createAuthService(client: AuthClient) {
     },
 
     async loginCitizen(input: PhoneLoginInput): Promise<AuthStartResult> {
+      ensureDemoAuthMode(authMode);
+
       const parsed = validatePhoneLogin(input);
       if (!parsed.success) {
         throw new Error(parsed.error.issues[0]?.message ?? "Datos de inicio invalidos.");
@@ -107,6 +118,8 @@ export function createAuthService(client: AuthClient) {
     },
 
     async loginFirefighter(input: FirefighterLoginInput): Promise<AuthStartResult> {
+      ensureDemoAuthMode(authMode);
+
       const parsed = validateFirefighterLogin(input);
       if (!parsed.success) {
         throw new Error(parsed.error.issues[0]?.message ?? "Datos de inicio invalidos.");
@@ -155,6 +168,8 @@ export function createAuthService(client: AuthClient) {
     },
 
     async markPhoneVerified(profileId: string, activeSessionId: string) {
+      ensureDemoAuthMode(authMode);
+
       const { error } = await rpc(client, "complete_demo_otp", {
         target_profile_id: profileId,
         target_active_session_id: activeSessionId
@@ -168,6 +183,12 @@ export function createAuthService(client: AuthClient) {
       if (error) throw error;
     }
   };
+}
+
+function ensureDemoAuthMode(authMode: AuthMode) {
+  if (authMode !== "demo") {
+    throw new Error("Autenticacion productiva aun no esta configurada.");
+  }
 }
 
 function rpc(client: AuthClient, name: string, args: Record<string, unknown>) {

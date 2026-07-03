@@ -150,4 +150,26 @@ describe("authService", () => {
     });
     expect(result.profileId).toBe("firefighter-profile");
   });
+
+  it("blocks simulated OTP when production mode is selected", async () => {
+    const client = createClient();
+    const service = createAuthService(client, { authMode: "production" });
+
+    await expect(
+      service.loginCitizen({
+        phone: "+51999888777",
+        password: "seguro123"
+      })
+    ).rejects.toThrow("Autenticacion productiva aun no esta configurada.");
+  });
+
+  it("does not complete demo OTP in production mode", async () => {
+    const client = createClient();
+    const service = createAuthService(client, { authMode: "production" });
+
+    await expect(service.markPhoneVerified("profile-id", "session-id")).rejects.toThrow(
+      "Autenticacion productiva aun no esta configurada."
+    );
+    expect(client.rpc).not.toHaveBeenCalledWith("complete_demo_otp", expect.anything());
+  });
 });

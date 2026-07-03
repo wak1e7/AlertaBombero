@@ -17,6 +17,7 @@ import { EmergencyButton } from "./components/EmergencyButton";
 import { StatusBadge } from "./components/StatusBadge";
 import { demoCredentials } from "./domain/demoCredentials";
 import { DEMO_OTP_CODE, verifySimulatedOtp } from "./domain/otp";
+import { getAuthMode } from "./lib/env";
 import { getSupabaseClient } from "./lib/supabase";
 import { CitizenProfileScreen } from "./screens/CitizenProfileScreen";
 import { CitizenHistoryScreen } from "./screens/CitizenHistoryScreen";
@@ -36,6 +37,13 @@ import {
   saveActiveSessionId,
   savePendingAuth
 } from "./services/session";
+
+const authMode = getAuthMode();
+const isDemoAuth = authMode === "demo";
+
+function authService() {
+  return createAuthService(getSupabaseClient(), { authMode });
+}
 
 export function App() {
   return (
@@ -226,7 +234,7 @@ function CitizenLoginScreen() {
     setLoading(true);
 
     try {
-      const result = await createAuthService(getSupabaseClient()).loginCitizen(form);
+      const result = await authService().loginCitizen(form);
       savePendingAuth({
         expiresAt: result.otp.expiresAt,
         profileId: result.profileId,
@@ -261,12 +269,14 @@ function CitizenLoginScreen() {
             placeholder="Ingresa tu contrasena"
           />
           <FormError message={error} />
-          <DemoHint
-            lines={[
-              `Demo: ${demoCredentials.citizen.phone}`,
-              `Contrasena: ${demoCredentials.citizen.password}`
-            ]}
-          />
+          {isDemoAuth ? (
+            <DemoHint
+              lines={[
+                `Demo: ${demoCredentials.citizen.phone}`,
+                `Contrasena: ${demoCredentials.citizen.password}`
+              ]}
+            />
+          ) : null}
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
@@ -294,7 +304,7 @@ function CitizenRegisterScreen() {
     setLoading(true);
 
     try {
-      const result = await createAuthService(getSupabaseClient()).registerCitizen(form);
+      const result = await authService().registerCitizen(form);
       savePendingAuth({
         expiresAt: result.otp.expiresAt,
         profileId: result.profileId,
@@ -335,12 +345,14 @@ function CitizenRegisterScreen() {
             onChange={(password) => setForm((current) => ({ ...current, password }))}
           />
           <FormError message={error} />
-          <DemoHint
-            lines={[
-              `Demo: ${demoCredentials.firefighters[0].code}`,
-              `Contrasena: ${demoCredentials.firefighters[0].password}`
-            ]}
-          />
+          {isDemoAuth ? (
+            <DemoHint
+              lines={[
+                `Demo: ${demoCredentials.firefighters[0].code}`,
+                `Contrasena: ${demoCredentials.firefighters[0].password}`
+              ]}
+            />
+          ) : null}
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Creando..." : "Continuar"}
           </button>
@@ -362,7 +374,7 @@ function FirefighterLoginScreen() {
     setLoading(true);
 
     try {
-      const result = await createAuthService(getSupabaseClient()).loginFirefighter(form);
+      const result = await authService().loginFirefighter(form);
       savePendingAuth({
         expiresAt: result.otp.expiresAt,
         profileId: result.profileId,
@@ -425,6 +437,11 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
     event.preventDefault();
     if (!pending) return;
 
+    if (!isDemoAuth) {
+      setError("Autenticacion productiva aun no esta configurada.");
+      return;
+    }
+
     const verification = verifySimulatedOtp({ ...pending, code: DEMO_OTP_CODE }, code);
     if (!verification.ok) {
       setError(verification.reason === "expired" ? "El codigo expiro. Vuelve a iniciar sesion." : "Codigo incorrecto.");
@@ -436,7 +453,7 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
 
     try {
       const sessionId = createActiveSessionId();
-      await createAuthService(getSupabaseClient()).markPhoneVerified(pending.profileId, sessionId);
+      await authService().markPhoneVerified(pending.profileId, sessionId);
       saveActiveSessionId(sessionId);
       clearPendingAuth();
       navigate(pending.welcomePath);
@@ -451,10 +468,12 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
     <AppShell>
       <AuthCard title="Verificar identidad" subtitle="Ingresa el codigo de seguridad">
         <form className="space-y-4" onSubmit={onSubmit}>
-          <p className="rounded-lg border border-emergency-100 bg-emergency-50 p-3 text-center text-xs font-semibold text-emergency-700">
-            OTP simulado para demo: {DEMO_OTP_CODE}
-          </p>
-          <TextInput label="Codigo OTP" value={code} onChange={setCode} placeholder="116116" />
+          {isDemoAuth ? (
+            <p className="rounded-lg border border-emergency-100 bg-emergency-50 p-3 text-center text-xs font-semibold text-emergency-700">
+              OTP simulado para demo: {DEMO_OTP_CODE}
+            </p>
+          ) : null}
+          <TextInput label="Codigo OTP" value={code} onChange={setCode} placeholder={isDemoAuth ? "116116" : "Codigo recibido"} />
           <FormError message={error} />
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Verificando..." : "Verificar"}

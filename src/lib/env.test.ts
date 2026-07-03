@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getSupabaseConfig } from "./env";
+import { getAuthMode, getSupabaseConfig } from "./env";
 
 describe("getSupabaseConfig", () => {
   it("returns configured Supabase URL and anon key", () => {
@@ -17,6 +17,23 @@ describe("getSupabaseConfig", () => {
   it("throws a helpful error when Supabase env vars are missing", () => {
     expect(() => getSupabaseConfig({})).toThrow(
       "Missing Supabase environment variables"
+    );
+  });
+});
+
+describe("getAuthMode", () => {
+  it("uses demo auth mode by default for MVP demos", () => {
+    expect(getAuthMode({})).toBe("demo");
+  });
+
+  it("accepts explicit demo and production auth modes", () => {
+    expect(getAuthMode({ VITE_AUTH_MODE: "demo" })).toBe("demo");
+    expect(getAuthMode({ VITE_AUTH_MODE: "production" })).toBe("production");
+  });
+
+  it("rejects unknown auth modes", () => {
+    expect(() => getAuthMode({ VITE_AUTH_MODE: "sms" })).toThrow(
+      "Invalid VITE_AUTH_MODE. Use demo or production."
     );
   });
 });
