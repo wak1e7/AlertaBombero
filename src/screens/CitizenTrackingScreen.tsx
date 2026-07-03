@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { InAppNotificationBanner } from "../components/InAppNotificationBanner";
@@ -36,6 +36,7 @@ type ReportDetail = {
 
 export function CitizenTrackingScreen() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const [report, setReport] = useState<ReportDetail | null>(null);
   const [liveLocation, setLiveLocation] = useState<LiveLocation | null>(null);
   const [history, setHistory] = useState<ReportStatusHistoryItem[]>([]);
@@ -92,10 +93,13 @@ export function CitizenTrackingScreen() {
     };
   }, [id]);
 
+  const backPath = searchParams.get("from") === "historial" ? "/ciudadano/historial" : "/ciudadano/inicio";
+  const backLabel = searchParams.get("from") === "historial" ? "Volver al historial" : "Volver al inicio";
+
   return (
     <AppShell>
       <header className="flex items-center gap-3 pt-6">
-        <Link className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink shadow-soft" to="/ciudadano/inicio">
+        <Link aria-label={backLabel} className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink shadow-soft" to={backPath}>
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
@@ -104,7 +108,7 @@ export function CitizenTrackingScreen() {
         </div>
       </header>
 
-      {loading ? <p className="mt-6 text-sm font-semibold text-muted">Cargando seguimiento...</p> : null}
+      {loading ? <p className="mt-6 text-sm font-semibold text-muted" role="status">Cargando seguimiento...</p> : null}
       {error ? <p className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</p> : null}
       <InAppNotificationBanner notification={notification} onDismiss={() => setNotification(null)} />
       {report ? (

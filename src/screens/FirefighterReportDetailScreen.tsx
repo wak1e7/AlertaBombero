@@ -140,7 +140,7 @@ export function FirefighterReportDetailScreen() {
         </div>
       </header>
 
-      {loading ? <p className="mt-6 text-sm font-semibold text-muted">Cargando emergencia...</p> : null}
+      {loading ? <p className="mt-6 text-sm font-semibold text-muted" role="status">Cargando emergencia...</p> : null}
       {error ? <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</p> : null}
 
       {report ? (

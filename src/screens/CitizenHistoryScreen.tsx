@@ -50,7 +50,7 @@ export function CitizenHistoryScreen({ navItems }: { navItems: Parameters<typeof
         <h1 className="mt-1 text-2xl font-black text-ink">Tus reportes</h1>
       </header>
       <section className="mt-5 space-y-3">
-        {loading ? <p className="text-sm font-semibold text-muted">Cargando reportes...</p> : null}
+        {loading ? <p className="text-sm font-semibold text-muted" role="status">Cargando reportes...</p> : null}
         {!loading && reports.length === 0 ? (
           <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm font-semibold text-muted">
             Aun no tienes reportes enviados.
@@ -67,7 +67,7 @@ export function CitizenHistoryScreen({ navItems }: { navItems: Parameters<typeof
                 <p className="truncate text-sm font-black text-ink">{report.type}</p>
                 <StatusBadge status={report.status} />
               </div>
-              <p className="mt-2 truncate text-xs font-medium text-muted">{report.address_text ?? "Sin direccion"}</p>
+              <p className="mt-2 text-xs font-medium leading-relaxed text-muted">{report.address_text ?? "Sin direccion"}</p>
               <p className="mt-1 text-xs text-muted">{new Date(report.created_at).toLocaleString()}</p>
             </div>
             <ChevronRight className="h-5 w-5 text-muted" />

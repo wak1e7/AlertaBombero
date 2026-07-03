@@ -599,7 +599,11 @@ function TextInput({
 function FormError({ message }: { message: string }) {
   if (!message) return null;
 
-  return <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{message}</p>;
+  return (
+    <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700" role="alert">
+      {message}
+    </p>
+  );
 }
 
 function DemoHint({ lines }: { lines: string[] }) {

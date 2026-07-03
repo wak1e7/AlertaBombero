@@ -100,4 +100,20 @@ describe("CitizenTrackingScreen", () => {
     expect(await screen.findByText("Estado actualizado")).toBeInTheDocument();
     expect(screen.getAllByText("Bombero en camino").length).toBeGreaterThanOrEqual(2);
   });
+
+  it("returns to citizen history when opened from the history list", async () => {
+    render(
+      <MemoryRouter initialEntries={["/ciudadano/seguimiento/report-1?from=historial"]}>
+        <Routes>
+          <Route path="/ciudadano/seguimiento/:id" element={<CitizenTrackingScreen />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText("INCENDIO")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Volver al historial" })).toHaveAttribute(
+      "href",
+      "/ciudadano/historial"
+    );
+  });
 });

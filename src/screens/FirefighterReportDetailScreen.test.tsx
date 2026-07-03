@@ -71,6 +71,7 @@ describe("FirefighterReportDetailScreen", () => {
       </MemoryRouter>
     );
 
+    expect(screen.getByRole("status")).toHaveTextContent("Cargando emergencia...");
     expect(await screen.findByRole("heading", { name: "Emergencia asignada" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Volver al historial" })).toHaveAttribute("href", "/bombero/historial");
   });

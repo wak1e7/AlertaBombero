@@ -61,7 +61,7 @@ export function CitizenProfileScreen({ navItems }: { navItems: Parameters<typeof
         <h1 className="mt-1 text-2xl font-black text-ink">Datos del ciudadano</h1>
       </header>
 
-      {loading ? <p className="mt-6 text-sm font-semibold text-muted">Cargando perfil...</p> : null}
+      {loading ? <p className="mt-6 text-sm font-semibold text-muted" role="status">Cargando perfil...</p> : null}
       {profile ? (
         <section className="mt-5 space-y-3">
           <ProfileRow label="Nombre" value={`${profile.name} ${profile.last_name}`} />

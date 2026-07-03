@@ -61,7 +61,7 @@ export function FirefighterHistoryScreen({ navItems }: { navItems: Parameters<ty
       </header>
 
       {error ? <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</p> : null}
-      {loading ? <p className="mt-6 text-sm font-semibold text-muted">Cargando historial...</p> : null}
+      {loading ? <p className="mt-6 text-sm font-semibold text-muted" role="status">Cargando historial...</p> : null}
       {!loading && reports.length === 0 ? (
         <p className="mt-6 rounded-lg border border-slate-200 bg-white p-4 text-sm font-semibold text-muted">
           Aun no hay reportes finalizados en tu compania.
@@ -80,7 +80,7 @@ export function FirefighterHistoryScreen({ navItems }: { navItems: Parameters<ty
                 <p className="text-sm font-black text-ink">{report.type}</p>
                 <StatusBadge status={report.status} />
               </div>
-              <p className="mt-2 truncate text-xs font-medium text-muted">{report.address_text ?? "Ubicacion registrada"}</p>
+              <p className="mt-2 text-xs font-medium leading-relaxed text-muted">{report.address_text ?? "Ubicacion registrada"}</p>
               <p className="mt-1 text-xs text-muted">{new Date(report.created_at).toLocaleString()}</p>
             </div>
             <ChevronRight className="h-5 w-5 text-muted" />

@@ -1,5 +1,5 @@
 import type React from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 
 type NavItem = {
@@ -27,14 +27,18 @@ export function AppShell({
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Link
+                  <NavLink
                     key={item.href}
                     to={item.href}
-                    className="grid place-items-center gap-1 rounded-lg px-2 py-2 text-xs font-semibold text-muted"
+                    className={({ isActive }) =>
+                      `grid place-items-center gap-1 rounded-lg px-2 py-2 text-xs font-semibold ${
+                        isActive ? "bg-emergency-50 text-emergency-700" : "text-muted"
+                      }`
+                    }
                   >
                     <Icon className="h-5 w-5" />
                     {item.label}
-                  </Link>
+                  </NavLink>
                 );
               })}
             </div>
