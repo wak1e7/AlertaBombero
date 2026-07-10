@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type React from "react";
 import { NavLink } from "react-router-dom";
-import { PhoneCall, WifiOff, type LucideIcon } from "lucide-react";
+import { PhoneCall, RefreshCw, WifiOff, type LucideIcon } from "lucide-react";
 
 type NavItem = {
   href: string;
@@ -18,12 +18,14 @@ export function AppShell({
   compact?: boolean;
   navItems?: NavItem[];
 }) {
-  const online = useOnlineStatus();
+  const { online, retry } = useOnlineStatus();
 
   return (
     <main className="min-h-dvh bg-app text-ink">
       <div className="mx-auto min-h-dvh w-full max-w-md bg-app">
-        <div className={compact ? "" : "px-5 pb-28"}>{online ? children : <OfflineEmergencyScreen />}</div>
+        <div className={compact ? "" : "px-5 pb-28"}>
+          {online ? children : <OfflineEmergencyScreen onRetry={retry} />}
+        </div>
         {navItems.length > 0 ? (
           <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur">
             <div className="mx-auto grid max-w-md grid-cols-3 px-4 py-2">
@@ -52,7 +54,7 @@ export function AppShell({
   );
 }
 
-function OfflineEmergencyScreen() {
+function OfflineEmergencyScreen({ onRetry }: { onRetry: () => void }) {
   return (
     <section className="grid min-h-dvh place-items-center px-5 py-8 text-center">
       <div>
@@ -67,6 +69,10 @@ function OfflineEmergencyScreen() {
           <PhoneCall className="h-5 w-5" aria-hidden="true" />
           Llamar 116
         </a>
+        <button className="btn-secondary mt-3" onClick={onRetry} type="button">
+          <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          Reintentar
+        </button>
       </div>
     </section>
   );
@@ -74,9 +80,9 @@ function OfflineEmergencyScreen() {
 
 function useOnlineStatus() {
   const [online, setOnline] = useState(() => navigator.onLine);
+  const syncOnlineStatus = () => setOnline(navigator.onLine);
 
   useEffect(() => {
-    const syncOnlineStatus = () => setOnline(navigator.onLine);
     window.addEventListener("online", syncOnlineStatus);
     window.addEventListener("offline", syncOnlineStatus);
 
@@ -86,5 +92,5 @@ function useOnlineStatus() {
     };
   }, []);
 
-  return online;
+  return { online, retry: syncOnlineStatus };
 }

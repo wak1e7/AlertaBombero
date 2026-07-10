@@ -40,5 +40,10 @@ describe("AppShell", () => {
     expect(screen.getByRole("heading", { name: "Sin conexion" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Llamar 116" })).toHaveAttribute("href", "tel:116");
     expect(screen.queryByRole("heading", { name: "Contenido operativo" })).not.toBeInTheDocument();
+
+    Object.defineProperty(window.navigator, "onLine", { configurable: true, value: true });
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(screen.getByRole("heading", { name: "Contenido operativo" })).toBeInTheDocument();
   });
 });
