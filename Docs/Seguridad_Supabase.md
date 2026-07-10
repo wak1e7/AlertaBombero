@@ -5,13 +5,14 @@
 - Todas las tablas expuestas de `public` tienen RLS habilitado.
 - El bucket `report-evidence` es privado; solo participantes autorizados del reporte pueden leer sus objetos.
 - Los cambios de estado, la creacion de reportes y la ubicacion en vivo se realizan mediante RPC con validaciones de rol, pertenencia a compania y transiciones permitidas.
+- Si falla la carga de evidencia obligatoria, `cancel_incomplete_emergency_report` elimina solo el reporte ciudadano sin evidencia, creado hace menos de diez minutos y aun no atendido.
 - La clave `SUPABASE_SERVICE_ROLE_KEY` solo se usa en Edge Functions. Nunca debe incluirse en variables `VITE_*` ni en el frontend.
 - La ruta heredada `link_firefighter_profile` fue eliminada y el autoaprovisionamiento de bomberos esta deshabilitado. La asignacion de una cuenta a un perfil precargado se realiza solo desde el panel administrativo de Supabase.
 - Las nuevas tablas, secuencias y funciones de `public` no reciben permisos para `anon`, `authenticated` ni `service_role` por defecto. Cada objeto nuevo debe otorgar permisos de manera explicita y contar con RLS antes de exponerse.
 
 ## Alertas esperadas del asesor
 
-Las RPC `create_emergency_report`, `set_report_status`, `upsert_live_location` y `complete_demo_otp` usan `SECURITY DEFINER` de forma intencional para ejecutar operaciones atomicas que no se permiten como escrituras directas. Cada una valida el usuario autenticado y las reglas de negocio antes de modificar datos.
+Las RPC `create_emergency_report`, `cancel_incomplete_emergency_report`, `set_report_status`, `upsert_live_location` y `complete_demo_otp` usan `SECURITY DEFINER` de forma intencional para ejecutar operaciones atomicas que no se permiten como escrituras directas. Cada una valida el usuario autenticado y las reglas de negocio antes de modificar datos.
 
 `complete_demo_otp` existe solo para el modo demo. Antes de activar `VITE_AUTH_MODE=production`, reemplazarla por la verificacion de OTP real de Supabase Auth y revocar su ejecucion para `authenticated`.
 

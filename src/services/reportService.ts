@@ -42,31 +42,40 @@ export async function createEmergencyReport(client: SupabaseReportClient, draft:
     throw reportError ?? new Error("No se pudo crear el reporte.");
   }
 
-  const filePath = buildReportStoragePath(report.id, draft.evidence);
-  const { error: uploadError } = await client.storage.from("report-evidence").upload(filePath, draft.evidence, {
-    contentType: draft.evidence.type,
-    upsert: false
-  });
+  try {
+    const filePath = buildReportStoragePath(report.id, draft.evidence);
+    const { error: uploadError } = await client.storage.from("report-evidence").upload(filePath, draft.evidence, {
+      contentType: draft.evidence.type,
+      upsert: false
+    });
 
-  if (uploadError) {
-    throw uploadError;
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { error: evidenceError } = await client
+      .from("report_evidence")
+      .insert({
+        file_name: draft.evidence.name,
+        file_size: draft.evidence.size,
+        file_type: draft.evidence.type.startsWith("video/") ? "video" : "image",
+        file_url: filePath,
+        report_id: report.id
+      })
+      .select("id")
+      .single();
+
+    if (evidenceError) {
+      throw evidenceError;
+    }
+
+    return { reportId: report.id, status: report.status };
+  } catch (error) {
+    try {
+      await client.rpc("cancel_incomplete_emergency_report", { p_report_id: report.id });
+    } catch {
+      // Preserve the original evidence failure; cleanup can be retried administratively.
+    }
+    throw error;
   }
-
-  const { error: evidenceError } = await client
-    .from("report_evidence")
-    .insert({
-      file_name: draft.evidence.name,
-      file_size: draft.evidence.size,
-      file_type: draft.evidence.type.startsWith("video/") ? "video" : "image",
-      file_url: filePath,
-      report_id: report.id
-    })
-    .select("id")
-    .single();
-
-  if (evidenceError) {
-    throw evidenceError;
-  }
-
-  return { reportId: report.id, status: report.status };
 }

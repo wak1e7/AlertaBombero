@@ -87,4 +87,53 @@ describe("report service", () => {
 
     expect(client.rpc).not.toHaveBeenCalled();
   });
+
+  it("cancels an incomplete report when evidence upload fails", async () => {
+    const { client } = createMockClient();
+    client.storage.from.mockReturnValue({
+      upload: vi.fn().mockResolvedValue({ data: null, error: new Error("Storage unavailable") })
+    });
+
+    await expect(
+      createEmergencyReport(client, {
+        description: "Humo en el segundo piso",
+        evidence,
+        location: {
+          addressText: "Av. Lima 116",
+          latitude: -12.096,
+          longitude: -77.036
+        },
+        type: "INCENDIO"
+      })
+    ).rejects.toThrow("Storage unavailable");
+
+    expect(client.rpc).toHaveBeenNthCalledWith(2, "cancel_incomplete_emergency_report", {
+      p_report_id: "report-1"
+    });
+  });
+
+  it("keeps the evidence error when cleanup cannot reach Supabase", async () => {
+    const { client } = createMockClient();
+    client.storage.from.mockReturnValue({
+      upload: vi.fn().mockResolvedValue({ data: null, error: new Error("Storage unavailable") })
+    });
+    client.rpc.mockResolvedValueOnce({
+      data: { id: "report-1", status: "ENVIADO" },
+      error: null
+    });
+    client.rpc.mockRejectedValueOnce(new Error("Cleanup unavailable"));
+
+    await expect(
+      createEmergencyReport(client, {
+        description: "Humo en el segundo piso",
+        evidence,
+        location: {
+          addressText: "Av. Lima 116",
+          latitude: -12.096,
+          longitude: -77.036
+        },
+        type: "INCENDIO"
+      })
+    ).rejects.toThrow("Storage unavailable");
+  });
 });
