@@ -33,6 +33,7 @@ vi.mock("../lib/supabase", () => ({
                 data: {
                   address_text: "Av. Central 123",
                   created_at: "2026-07-02T10:30:00.000Z",
+                  company: { name: "Compania N 12 - San Miguel" },
                   id: "report-1",
                   latitude: -12.04,
                   longitude: -77.03,
@@ -81,6 +82,7 @@ describe("CitizenTrackingScreen", () => {
     );
 
     expect(await screen.findByText("INCENDIO")).toBeInTheDocument();
+    expect(screen.getByText("Compania N 12 - San Miguel")).toBeInTheDocument();
     await waitFor(() => expect(reportUpdateHandlers).toHaveLength(1));
 
     act(() => {
@@ -99,6 +101,7 @@ describe("CitizenTrackingScreen", () => {
 
     expect(await screen.findByText("Estado actualizado")).toBeInTheDocument();
     expect(screen.getAllByText("Bombero en camino").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("Compania N 12 - San Miguel")).toBeInTheDocument();
   });
 
   it("returns to citizen history when opened from the history list", async () => {

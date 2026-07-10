@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, Building2, MapPin } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { InAppNotificationBanner } from "../components/InAppNotificationBanner";
 import { StatusBadge } from "../components/StatusBadge";
@@ -26,12 +26,17 @@ const statusHistoryClient = () => getSupabaseClient() as unknown as StatusHistor
 
 type ReportDetail = {
   address_text: string | null;
+  company: { name: string } | null;
   created_at: string;
   id: string;
   latitude: number;
   longitude: number;
   status: EmergencyStatus;
   type: string;
+};
+
+type ReportQueryResult = Omit<ReportDetail, "company"> & {
+  company: { name: string } | { name: string }[] | null;
 };
 
 export function CitizenTrackingScreen() {
@@ -51,7 +56,7 @@ export function CitizenTrackingScreen() {
     async function loadReport() {
       const { data, error: queryError } = await getSupabaseClient()
         .from("emergency_reports")
-        .select("id,type,status,address_text,created_at,latitude,longitude")
+        .select("id,type,status,address_text,created_at,latitude,longitude,company:fire_companies(name)")
         .eq("id", id)
         .maybeSingle();
 
@@ -59,7 +64,7 @@ export function CitizenTrackingScreen() {
       if (queryError || !data) {
         setError("No se pudo cargar el seguimiento.");
       } else {
-        setReport(data as ReportDetail);
+        setReport(normalizeReport(data as ReportQueryResult));
       }
       setLoading(false);
     }
@@ -71,12 +76,12 @@ export function CitizenTrackingScreen() {
     const channel = getSupabaseClient()
       .channel(`report-${id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "emergency_reports", filter: `id=eq.${id}` }, (payload) => {
-        const nextReport = payload.new as ReportDetail;
+        const nextReport = payload.new as Omit<ReportDetail, "company">;
         setReport((current) => {
           if (current) {
             setNotification(createCitizenStatusNotification(current.status, nextReport.status));
           }
-          return nextReport;
+          return { ...nextReport, company: current?.company ?? null };
         });
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "live_locations", filter: `report_id=eq.${id}` }, (payload) => {
@@ -120,6 +125,10 @@ export function CitizenTrackingScreen() {
               <MapPin className="h-5 w-5 text-emergency-600" />
               <span>{report.address_text ?? "Ubicacion registrada"}</span>
             </div>
+            <div className="mt-3 flex gap-3 text-sm font-medium text-muted">
+              <Building2 className="h-5 w-5 text-emergency-600" />
+              <span>{report.company?.name ?? "Compania por asignar"}</span>
+            </div>
           </div>
           <TrackingMap
             emergency={{ latitude: Number(report.latitude), longitude: Number(report.longitude) }}
@@ -143,4 +152,9 @@ export function CitizenTrackingScreen() {
       ) : null}
     </AppShell>
   );
+}
+
+function normalizeReport(report: ReportQueryResult): ReportDetail {
+  const company = Array.isArray(report.company) ? report.company[0] ?? null : report.company;
+  return { ...report, company };
 }
