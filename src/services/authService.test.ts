@@ -8,19 +8,7 @@ function createClient() {
       signInWithPassword: vi.fn().mockResolvedValue({ data: { user: { id: "auth-user" } }, error: null }),
       signOut: vi.fn().mockResolvedValue({ error: null })
     },
-    rpc: vi.fn((name: string) => {
-      if (name === "link_firefighter_profile") {
-        return Promise.resolve({
-          data: {
-            id: "firefighter-profile",
-            role: "firefighter",
-            phone: "+51900111222",
-            active: true
-          },
-          error: null
-        });
-      }
-
+    rpc: vi.fn(() => {
       return Promise.resolve({
         data: { id: "profile-id", role: "citizen", active: true },
         error: null
@@ -122,14 +110,13 @@ describe("authService", () => {
       email: "b-204@bombero.alertabombero.app",
       password: "bombero123"
     });
-    expect(client.rpc).toHaveBeenCalledWith("link_firefighter_profile", {
-      target_firefighter_code: "B-204"
-    });
+    expect(client.from).toHaveBeenCalledWith("profiles");
+    expect(client.rpc).not.toHaveBeenCalledWith("link_firefighter_profile", expect.anything());
     expect(result.nextStep).toBe("otp");
     expect(result.otp.purpose).toBe("firefighter_login");
   });
 
-  it("provisions a firefighter auth user on first login when the seed profile exists", async () => {
+  it("does not allow firefighter self-provisioning after a failed login", async () => {
     const client = createClient();
     client.auth.signInWithPassword.mockResolvedValueOnce({
       data: null,
@@ -137,18 +124,13 @@ describe("authService", () => {
     });
     const service = createAuthService(client);
 
-    const result = await service.loginFirefighter({
-      firefighterCode: "B-204",
-      password: "bombero123"
-    });
-
-    expect(client.functions.invoke).toHaveBeenCalledWith("provision-firefighter", {
-      body: {
+    await expect(
+      service.loginFirefighter({
         firefighterCode: "B-204",
         password: "bombero123"
-      }
-    });
-    expect(result.profileId).toBe("firefighter-profile");
+      })
+    ).rejects.toThrow("Invalid login credentials");
+    expect(client.functions.invoke).not.toHaveBeenCalledWith("provision-firefighter", expect.anything());
   });
 
   it("blocks simulated OTP when production mode is selected", async () => {

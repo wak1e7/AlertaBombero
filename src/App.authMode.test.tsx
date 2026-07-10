@@ -1,19 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { savePendingAuth } from "./services/session";
+import { App } from "./App";
 
 describe("App auth mode", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
-    vi.resetModules();
     sessionStorage.clear();
   });
 
   it("hides demo credentials on login screens in production auth mode", async () => {
     vi.stubEnv("VITE_AUTH_MODE", "production");
     window.history.pushState({}, "", "/ciudadano/login");
-    const { App } = await import("./App");
-
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "Iniciar sesion" })).toBeInTheDocument();
@@ -32,8 +30,6 @@ describe("App auth mode", () => {
       welcomePath: "/ciudadano/bienvenida"
     });
     window.history.pushState({}, "", "/ciudadano/otp");
-    const { App } = await import("./App");
-
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "Verificar identidad" })).toBeInTheDocument();

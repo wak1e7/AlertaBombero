@@ -38,11 +38,12 @@ import {
   savePendingAuth
 } from "./services/session";
 
-const authMode = getAuthMode();
-const isDemoAuth = authMode === "demo";
-
 function authService() {
-  return createAuthService(getSupabaseClient(), { authMode });
+  return createAuthService(getSupabaseClient(), { authMode: getAuthMode() });
+}
+
+function isDemoAuth() {
+  return getAuthMode() === "demo";
 }
 
 export function App() {
@@ -269,7 +270,7 @@ function CitizenLoginScreen() {
             placeholder="Ingresa tu contrasena"
           />
           <FormError message={error} />
-          {isDemoAuth ? (
+          {isDemoAuth() ? (
             <DemoHint
               lines={[
                 `Demo: ${demoCredentials.citizen.phone}`,
@@ -345,7 +346,7 @@ function CitizenRegisterScreen() {
             onChange={(password) => setForm((current) => ({ ...current, password }))}
           />
           <FormError message={error} />
-          {isDemoAuth ? (
+          {isDemoAuth() ? (
             <DemoHint
               lines={[
                 `Demo: ${demoCredentials.firefighters[0].code}`,
@@ -437,7 +438,7 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
     event.preventDefault();
     if (!pending) return;
 
-    if (!isDemoAuth) {
+    if (!isDemoAuth()) {
       setError("Autenticacion productiva aun no esta configurada.");
       return;
     }
@@ -468,12 +469,17 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
     <AppShell>
       <AuthCard title="Verificar identidad" subtitle="Ingresa el codigo de seguridad">
         <form className="space-y-4" onSubmit={onSubmit}>
-          {isDemoAuth ? (
+          {isDemoAuth() ? (
             <p className="rounded-lg border border-emergency-100 bg-emergency-50 p-3 text-center text-xs font-semibold text-emergency-700">
               OTP simulado para demo: {DEMO_OTP_CODE}
             </p>
           ) : null}
-          <TextInput label="Codigo OTP" value={code} onChange={setCode} placeholder={isDemoAuth ? "116116" : "Codigo recibido"} />
+          <TextInput
+            label="Codigo OTP"
+            value={code}
+            onChange={setCode}
+            placeholder={isDemoAuth() ? "116116" : "Codigo recibido"}
+          />
           <FormError message={error} />
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Verificando..." : "Verificar"}

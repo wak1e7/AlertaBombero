@@ -133,25 +133,13 @@ export function createAuthService(client: AuthClient, options: AuthServiceOption
         password: data.password
       });
 
-      if (authError) {
-        const { error: provisionError } = await invokeFunction(client, "provision-firefighter", {
-          firefighterCode: code,
-          password: data.password
-        });
+      if (authError) throw authError;
 
-        if (provisionError) throw authError;
-
-        const retry = await client.auth.signInWithPassword({
-          email,
-          password: data.password
-        });
-
-        if (retry.error) throw retry.error;
-      }
-
-      const { data: profile, error: profileError } = await rpc(client, "link_firefighter_profile", {
-        target_firefighter_code: code
-      });
+      const { data: profile, error: profileError } = await client
+        .from("profiles")
+        .select("id, role, firefighter_code, active")
+        .eq("firefighter_code", code)
+        .maybeSingle();
 
       if (profileError) throw profileError;
       if (!profile || profile.role !== "firefighter" || !profile.active) {
