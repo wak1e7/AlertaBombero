@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, RefreshCw } from "lucide-react";
+import { ChevronRight, Navigation, RefreshCw } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { InAppNotificationBanner } from "../components/InAppNotificationBanner";
 import { StatusBadge } from "../components/StatusBadge";
+import { distanceInKilometers, formatApproximateDistance } from "../domain/distance";
+import type { Coordinate } from "../domain/location";
 import { createFirefighterReportNotification, type InAppNotification } from "../domain/firefighterNotifications";
 import { getSupabaseClient } from "../lib/supabase";
 import {
@@ -19,6 +21,7 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
   const [notification, setNotification] = useState<InAppNotification | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
 
   async function loadReports() {
     setLoading(true);
@@ -48,6 +51,21 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
     return () => {
       getSupabaseClient().removeChannel(channel);
     };
+  }, []);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCurrentLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+      },
+      () => undefined,
+      { enableHighAccuracy: true, maximumAge: 15_000, timeout: 8_000 }
+    );
   }, []);
 
   return (
@@ -89,6 +107,7 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
                 <StatusBadge status={report.status} />
               </div>
               <p className="mt-2 text-xs font-medium leading-relaxed text-muted">{report.address_text ?? "Ubicacion registrada"}</p>
+              <DistanceLabel currentLocation={currentLocation} reportLocation={report} />
               <p className="mt-1 text-xs text-muted">{new Date(report.created_at).toLocaleString()}</p>
             </div>
             <ChevronRight className="h-5 w-5 text-muted" />
@@ -96,5 +115,20 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
         ))}
       </section>
     </AppShell>
+  );
+}
+
+function DistanceLabel({ currentLocation, reportLocation }: { currentLocation: Coordinate | null; reportLocation: Coordinate }) {
+  const distance = currentLocation ? distanceInKilometers(currentLocation, reportLocation) : null;
+
+  if (distance === null) {
+    return <p className="mt-1 text-xs text-muted">Distancia no disponible</p>;
+  }
+
+  return (
+    <p className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-emergency-700">
+      <Navigation className="h-3.5 w-3.5" aria-hidden="true" />
+      {formatApproximateDistance(distance)}
+    </p>
   );
 }
