@@ -1,6 +1,7 @@
+import { useEffect, useState } from "react";
 import type React from "react";
 import { NavLink } from "react-router-dom";
-import type { LucideIcon } from "lucide-react";
+import { PhoneCall, WifiOff, type LucideIcon } from "lucide-react";
 
 type NavItem = {
   href: string;
@@ -17,10 +18,12 @@ export function AppShell({
   compact?: boolean;
   navItems?: NavItem[];
 }) {
+  const online = useOnlineStatus();
+
   return (
     <main className="min-h-dvh bg-app text-ink">
       <div className="mx-auto min-h-dvh w-full max-w-md bg-app">
-        <div className={compact ? "" : "px-5 pb-28"}>{children}</div>
+        <div className={compact ? "" : "px-5 pb-28"}>{online ? children : <OfflineEmergencyScreen />}</div>
         {navItems.length > 0 ? (
           <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur">
             <div className="mx-auto grid max-w-md grid-cols-3 px-4 py-2">
@@ -47,4 +50,41 @@ export function AppShell({
       </div>
     </main>
   );
+}
+
+function OfflineEmergencyScreen() {
+  return (
+    <section className="grid min-h-dvh place-items-center px-5 py-8 text-center">
+      <div>
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-amber-50 text-amber-700">
+          <WifiOff className="h-8 w-8" aria-hidden="true" />
+        </span>
+        <h1 className="mt-5 text-2xl font-black text-ink">Sin conexion</h1>
+        <p className="mt-2 text-sm font-medium text-muted">
+          Los reportes, estados y ubicacion en vivo se actualizaran cuando vuelva internet.
+        </p>
+        <a className="btn-primary mt-8 inline-flex items-center gap-2" href="tel:116">
+          <PhoneCall className="h-5 w-5" aria-hidden="true" />
+          Llamar 116
+        </a>
+      </div>
+    </section>
+  );
+}
+
+function useOnlineStatus() {
+  const [online, setOnline] = useState(() => navigator.onLine);
+
+  useEffect(() => {
+    const syncOnlineStatus = () => setOnline(navigator.onLine);
+    window.addEventListener("online", syncOnlineStatus);
+    window.addEventListener("offline", syncOnlineStatus);
+
+    return () => {
+      window.removeEventListener("online", syncOnlineStatus);
+      window.removeEventListener("offline", syncOnlineStatus);
+    };
+  }, []);
+
+  return online;
 }
