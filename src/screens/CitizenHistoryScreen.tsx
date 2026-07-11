@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { AppShell } from "../components/AppShell";
@@ -18,6 +18,11 @@ type ReportListItem = {
 export function CitizenHistoryScreen({ navItems }: { navItems: Parameters<typeof AppShell>[0]["navItems"] }) {
   const [reports, setReports] = useState<ReportListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "active" | "finished">("all");
+  const visibleReports = useMemo(
+    () => reports.filter((report) => filter === "all" || (filter === "finished" ? report.status === "FINALIZADO" : report.status !== "FINALIZADO")),
+    [filter, reports]
+  );
 
   useEffect(() => {
     let alive = true;
@@ -51,14 +56,19 @@ export function CitizenHistoryScreen({ navItems }: { navItems: Parameters<typeof
         <h1 className="page-heading mt-1">Mis reportes</h1>
         <p className="mt-1 text-xs font-medium text-muted">Consulta el estado de tus reportes.</p>
       </header>
+      <div className="mt-5 grid grid-cols-3 rounded-lg bg-slate-100 p-1">
+        <HistoryFilter active={filter === "all"} label="Todos" onClick={() => setFilter("all")} />
+        <HistoryFilter active={filter === "active"} label="Activos" onClick={() => setFilter("active")} />
+        <HistoryFilter active={filter === "finished"} label="Finalizados" onClick={() => setFilter("finished")} />
+      </div>
       <section className="mt-5 space-y-3">
         {loading ? <p className="text-sm font-semibold text-muted" role="status">Cargando reportes...</p> : null}
-        {!loading && reports.length === 0 ? (
+        {!loading && visibleReports.length === 0 ? (
           <p className="app-card p-4 text-sm font-semibold text-muted">
             Aun no tienes reportes enviados.
           </p>
         ) : null}
-        {reports.map((report) => (
+        {visibleReports.map((report) => (
           <Link
             className="app-card flex items-center gap-3 p-3.5 transition hover:border-emergency-200"
             key={report.id}
@@ -79,4 +89,8 @@ export function CitizenHistoryScreen({ navItems }: { navItems: Parameters<typeof
       </section>
     </AppShell>
   );
+}
+
+function HistoryFilter({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
+  return <button className={`min-h-9 rounded-md px-1 text-[11px] font-bold transition ${active ? "bg-emergency-600 text-white shadow-sm" : "text-muted"}`} onClick={onClick} type="button">{label}</button>;
 }

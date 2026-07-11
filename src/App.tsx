@@ -3,11 +3,14 @@ import { useEffect, useState, type FormEvent } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import {
   Bell,
+  ChevronRight,
   ClipboardList,
   History,
   Home,
+  LockKeyhole,
   MapPin,
   ShieldCheck,
+  TimerReset,
   UserRound,
   UsersRound
 } from "lucide-react";
@@ -16,6 +19,7 @@ import { AuthCard } from "./components/AuthCard";
 import { BrandLogo } from "./components/BrandLogo";
 import { EmergencyButton } from "./components/EmergencyButton";
 import { StatusBadge } from "./components/StatusBadge";
+import accessHeroBackground from "./assets/access-hero-background.png";
 import { demoCredentials } from "./domain/demoCredentials";
 import { DEMO_OTP_CODE, verifySimulatedOtp } from "./domain/otp";
 import { getAuthMode } from "./lib/env";
@@ -150,33 +154,45 @@ export function App() {
 function RoleAccessScreen() {
   return (
     <AppShell compact>
-      <section className="flex min-h-dvh flex-col justify-between px-4 py-7 sm:px-5">
-        <div className="pt-4 text-center">
-          <div className="mx-auto w-fit"><BrandLogo large /></div>
-          <h1 className="mt-4 text-3xl font-black text-ink">Alerta<span className="text-emergency-600">Bombero</span></h1>
-          <p className="mt-1 text-sm font-medium text-muted">Reporta emergencias en tiempo real</p>
-        </div>
+      <section
+        className="relative isolate min-h-dvh overflow-hidden bg-white px-5 pb-8 pt-9 sm:px-7"
+        style={{ backgroundImage: `url(${accessHeroBackground})`, backgroundPosition: "center bottom", backgroundRepeat: "no-repeat", backgroundSize: "100% auto" }}
+      >
+        <div className="relative mx-auto flex min-h-[calc(100dvh-4rem)] max-w-sm flex-col">
+          <header className="pt-5 text-center">
+            <div className="mx-auto w-fit"><BrandLogo large /></div>
+            <h1 className="mt-4 text-[2.35rem] font-black leading-none tracking-[-0.045em] text-emergency-700">AlertaBombero</h1>
+            <p className="mt-3 text-base font-medium tracking-[-0.01em] text-slate-500">Reporta emergencias en tiempo real</p>
+            <div className="mx-auto mt-7 flex w-28 items-center justify-center gap-2" aria-hidden="true"><span className="h-0.5 w-9 bg-emergency-600" /><span className="h-2.5 w-2.5 rounded-full bg-emergency-600" /><span className="h-0.5 w-9 bg-emergency-600" /></div>
+          </header>
 
-        <div className="space-y-3">
-          <p className="text-center text-sm font-bold text-ink">Como deseas continuar?</p>
+          <div className="mt-12 space-y-3">
+            <p className="text-center text-xl font-black tracking-[-0.02em] text-ink">Como deseas continuar?</p>
           <RoleCard
             href="/ciudadano/login"
-            icon={<UsersRound className="h-7 w-7" />}
+            icon={<UsersRound className="h-9 w-9" />}
             title="Soy ciudadano"
-            description="Reporta emergencias y haz seguimiento."
+            description={<>Reporta emergencias<br />y haz seguimiento</>}
           />
           <RoleCard
             href="/bombero/login"
-            icon={<ShieldCheck className="h-7 w-7" />}
+            icon={<ShieldCheck className="h-9 w-9" />}
             title="Soy bombero"
-            description="Accede al panel operativo."
+            description={<>Accede al panel operativo<br />y atiende emergencias</>}
             featured
           />
-        </div>
+          </div>
 
-        <div className="border-t border-slate-100 pt-4 text-center">
-          <p className="text-xs font-medium text-muted">Juntos protegemos vidas y nuestra comunidad.</p>
-          <p className="mt-1 text-[11px] font-bold text-emergency-600">Ante una emergencia, actua con calma y seguridad.</p>
+          <div className="mt-7 grid grid-cols-2 gap-3">
+            <TrustCard icon={<LockKeyhole className="h-6 w-6" />} title="Datos seguros" description="Tu informacion esta protegida y encriptada." />
+            <TrustCard icon={<TimerReset className="h-6 w-6" />} title="Respuesta rapida" description="Conexion directa con bomberos y estaciones." />
+          </div>
+
+          <footer className="mt-auto pt-10 text-center">
+            <div className="flex items-center gap-3" aria-hidden="true"><span className="h-px flex-1 bg-slate-300" /><span className="grid h-9 w-9 place-items-center rounded-full border-2 border-emergency-600 bg-white text-emergency-600"><ShieldCheck className="h-4 w-4" /></span><span className="h-px flex-1 bg-slate-300" /></div>
+            <p className="mt-5 text-sm font-medium text-slate-500">Juntos protegemos vidas y nuestra comunidad.</p>
+            <p className="mt-3 text-sm font-bold text-emergency-700">Ante una emergencia, actua con calma y seguridad.</p>
+          </footer>
         </div>
       </section>
     </AppShell>
@@ -193,35 +209,43 @@ function RoleCard({
   href: string;
   icon: React.ReactNode;
   title: string;
-  description: string;
+  description: React.ReactNode;
   featured?: boolean;
 }) {
   return (
     <Link
       to={href}
-      className={`flex min-h-[76px] items-center gap-4 rounded-lg border p-4 shadow-soft transition active:scale-[0.99] ${
+      className={`flex min-h-32 items-center gap-4 rounded-[1.35rem] border p-4.5 text-left shadow-[0_12px_28px_rgba(31,38,51,0.09)] transition duration-150 active:scale-[0.99] ${
         featured
-          ? "border-emergency-600 bg-emergency-600 text-white"
-          : "border-emergency-200 bg-white text-ink hover:bg-emergency-50"
+          ? "border-emergency-600 bg-[linear-gradient(125deg,#d90f0c_0%,#ee1a16_70%,#c90e0b_100%)] text-white"
+          : "border-emergency-200 bg-white/95 text-ink hover:bg-emergency-50"
       }`}
     >
       <span
-        className={`grid h-11 w-11 place-items-center rounded-full ${
-          featured ? "bg-white/15" : "bg-emergency-50 text-emergency-600"
+        className={`grid h-16 w-16 shrink-0 place-items-center rounded-full ${
+          featured ? "bg-white text-emergency-600" : "bg-emergency-50 text-emergency-600"
         }`}
       >
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-extrabold">{title}</span>
-        <span className={`mt-1 block text-xs ${featured ? "text-white/85" : "text-muted"}`}>
+        <span className="block whitespace-nowrap text-[1.4rem] font-black leading-none tracking-[-0.035em] sm:text-[1.55rem]">{title}</span>
+        <span className={`mt-2.5 block text-sm leading-snug sm:text-base ${featured ? "text-white/95" : "text-slate-500"}`}>
           {description}
         </span>
       </span>
-      <span aria-hidden="true" className="text-xl">
-        &gt;
-      </span>
+      <ChevronRight aria-hidden="true" className="h-8 w-8 shrink-0 stroke-[2.5]" />
     </Link>
+  );
+}
+
+function TrustCard({ description, icon, title }: { description: string; icon: React.ReactNode; title: string }) {
+  return (
+    <article className="min-h-36 rounded-[1.15rem] border border-slate-200/80 bg-white/90 p-4 shadow-[0_5px_16px_rgba(31,38,51,0.04)]">
+      <span className="grid h-12 w-12 place-items-center rounded-full bg-emergency-50 text-emergency-600">{icon}</span>
+      <h2 className="mt-3 text-sm font-black tracking-[-0.02em] text-ink">{title}</h2>
+      <p className="mt-1 text-xs leading-relaxed text-slate-500">{description}</p>
+    </article>
   );
 }
 

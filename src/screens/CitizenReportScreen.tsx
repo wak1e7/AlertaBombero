@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, CheckCircle2, MapPin, Phone, RefreshCw, Send, ShieldCheck, Upload, X } from "lucide-react";
 import { BrandLogo } from "../components/BrandLogo";
 import { ReportTypeIcon } from "../components/ReportTypeIcon";
+import { TrackingMap } from "../components/TrackingMap";
 import { AppShell } from "../components/AppShell";
 import { emergencyTypes, validateReportDraft, type ReportLocation } from "../domain/report";
 import { getSupabaseClient } from "../lib/supabase";
@@ -167,9 +168,7 @@ export function CitizenReportScreen() {
           </div>
 
           <div className="app-card overflow-hidden">
-            <div className="h-32 bg-[linear-gradient(135deg,#f3f0e8_0%,#e7f1df_45%,#faf4e8_100%)] p-4">
-              <span className="inline-flex rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-ink shadow-soft"><MapPin className="mr-1 h-3.5 w-3.5 text-emergency-600" /> Ubicacion actual</span>
-            </div>
+            {location ? <TrackingMap emergency={location} /> : <div className="grid h-44 place-items-center bg-emergency-50 text-xs font-semibold text-emergency-700">Detectando ubicacion...</div>}
             <div className="p-4">
               <p className="text-sm font-black text-ink">2. Verifica tu ubicacion</p>
               <p className="mt-1 text-xs font-medium text-muted">
@@ -192,9 +191,7 @@ export function CitizenReportScreen() {
             />
           </label>
 
-          <button className="btn-primary" onClick={() => setStep("evidence")} type="button">
-            Continuar
-          </button>
+          <div className="sticky bottom-0 -mx-4 bg-app/95 px-4 pb-2 pt-3 backdrop-blur"><button className="btn-primary" onClick={() => setStep("evidence")} type="button">Continuar</button></div>
         </section>
       ) : null}
 
@@ -221,7 +218,7 @@ export function CitizenReportScreen() {
               <CheckCircle2 className="h-5 w-5 text-success" />
             </div>
           ) : null}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="sticky bottom-0 -mx-4 grid grid-cols-2 gap-3 bg-app/95 px-4 pb-2 pt-3 backdrop-blur">
             <button className="btn-secondary" onClick={() => setStep("details")} type="button">
               Atras
             </button>
@@ -241,13 +238,7 @@ export function CitizenReportScreen() {
           <SummaryRow label="Evidencia" value={evidence?.name ?? "Sin evidencia"} />
           <SummaryRow label="Descripcion" value={description || "Sin descripcion adicional"} />
           {!validation.ok ? <FormError message={validation.errors[0] ?? ""} /> : null}
-          <button className="btn-primary" disabled={!validation.ok} onClick={startCountdown} type="button">
-            <Send className="h-4 w-4" />
-            Enviar reporte
-          </button>
-          <button className="btn-secondary" onClick={() => setStep("evidence")} type="button">
-            Editar evidencia
-          </button>
+          <div className="sticky bottom-0 -mx-4 space-y-2 bg-app/95 px-4 pb-2 pt-3 backdrop-blur"><button className="btn-primary" disabled={!validation.ok} onClick={startCountdown} type="button"><Send className="h-4 w-4" />Enviar reporte</button><button className="btn-secondary" onClick={() => setStep("evidence")} type="button">Editar evidencia</button></div>
         </section>
       ) : null}
 

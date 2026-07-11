@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Navigation, RefreshCw } from "lucide-react";
+import { Bell, ChevronDown, ChevronRight, Navigation, RefreshCw } from "lucide-react";
 import { AppShell } from "../components/AppShell";
+import { BrandLogo } from "../components/BrandLogo";
 import { InAppNotificationBanner } from "../components/InAppNotificationBanner";
 import { ReportTypeIcon } from "../components/ReportTypeIcon";
 import { StatusBadge } from "../components/StatusBadge";
@@ -23,6 +24,11 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
+  const [filter, setFilter] = useState<"all" | "new" | "active">("all");
+  const visibleReports = useMemo(
+    () => reports.filter((report) => filter === "all" || (filter === "new" ? report.status === "ENVIADO" : report.status !== "ENVIADO")),
+    [filter, reports]
+  );
 
   async function loadReports() {
     setLoading(true);
@@ -71,32 +77,41 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
 
   return (
     <AppShell navItems={navItems}>
-      <header className="flex items-center justify-between pt-6">
-        <div>
-          <p className="section-kicker">Operaciones</p>
-          <h1 className="page-heading mt-1">Reportes</h1>
+      <header className="pt-5">
+        <div className="flex items-center justify-between"><BrandLogo withName /><span className="relative grid h-9 w-9 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><Bell className="h-4 w-4" /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emergency-600" /></span></div>
+        <div className="mt-6 flex items-end justify-between">
+          <div><p className="section-kicker">Operaciones</p><h1 className="page-heading mt-1">Reportes</h1></div>
+          <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-success"><span className="h-1.5 w-1.5 rounded-full bg-success" /> En linea</span>
         </div>
-        <button
+      </header>
+      <button className="app-card mt-5 flex w-full items-center justify-between p-3 text-left" type="button">
+        <span><span className="block text-[10px] font-bold uppercase tracking-wide text-muted">Compania activa</span><span className="mt-0.5 block text-sm font-black text-ink">Compania N 12 - San Miguel</span></span><ChevronDown className="h-4 w-4 text-emergency-600" />
+      </button>
+      <div className="mt-4 grid grid-cols-3 rounded-lg bg-slate-100 p-1">
+        <FilterButton active={filter === "all"} count={reports.length} label="Todos" onClick={() => setFilter("all")} />
+        <FilterButton active={filter === "new"} count={reports.filter((report) => report.status === "ENVIADO").length} label="Nuevos" onClick={() => setFilter("new")} />
+        <FilterButton active={filter === "active"} count={reports.filter((report) => report.status !== "ENVIADO").length} label="Activos" onClick={() => setFilter("active")} />
+      </div>
+      <button
           aria-label="Actualizar reportes"
-          className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-emergency-600 shadow-soft"
+          className="sr-only"
           onClick={loadReports}
           type="button"
         >
           <RefreshCw className="h-5 w-5" />
         </button>
-      </header>
 
       {error ? <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</p> : null}
       <InAppNotificationBanner notification={notification} onDismiss={() => setNotification(null)} />
       {loading ? <p className="mt-6 text-sm font-semibold text-muted" role="status">Cargando reportes...</p> : null}
-      {!loading && reports.length === 0 ? (
+      {!loading && visibleReports.length === 0 ? (
         <p className="app-card mt-6 p-4 text-sm font-semibold text-muted">
           No hay reportes activos asignados a tu compania.
         </p>
       ) : null}
 
       <section className="mt-5 space-y-3">
-        {reports.map((report) => (
+        {visibleReports.map((report) => (
           <Link
             className="app-card flex items-center gap-3 p-3.5 transition hover:border-emergency-200"
             key={report.id}
@@ -118,6 +133,10 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
       </section>
     </AppShell>
   );
+}
+
+function FilterButton({ active, count, label, onClick }: { active: boolean; count: number; label: string; onClick: () => void }) {
+  return <button className={`min-h-9 rounded-md px-1 text-[11px] font-bold transition ${active ? "bg-white text-emergency-700 shadow-sm" : "text-muted"}`} onClick={onClick} type="button">{label} <span className="ml-0.5">{count}</span></button>;
 }
 
 function DistanceLabel({ currentLocation, reportLocation }: { currentLocation: Coordinate | null; reportLocation: Coordinate }) {
