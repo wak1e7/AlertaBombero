@@ -57,7 +57,7 @@ export function CitizenProfileScreen({ navItems }: { navItems: Parameters<typeof
 
   return (
     <AppShell navItems={navItems}>
-      <header className="pt-6">
+      <header className="screen-header pt-6">
         <p className="section-kicker">Perfil</p>
         <h1 className="page-heading mt-1">Mi cuenta</h1>
         <p className="mt-1 text-xs font-medium text-muted">Gestiona tus datos y preferencias.</p>

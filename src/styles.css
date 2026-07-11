@@ -20,6 +20,10 @@ body {
   background: #fcfcfd;
 }
 
+main {
+  min-height: 100dvh;
+}
+
 button,
 a {
   -webkit-tap-highlight-color: transparent;
@@ -139,11 +143,11 @@ textarea:focus-visible {
   }
 
   .app-card {
-    @apply rounded-lg border border-slate-200/80 bg-white shadow-soft;
+    @apply rounded-lg border border-slate-200/80 bg-white shadow-[0_8px_22px_rgba(31,38,51,0.06)];
   }
 
   .page-heading {
-    @apply text-2xl font-black leading-tight text-ink;
+    @apply text-[1.75rem] font-black leading-tight text-ink;
   }
 
   .section-kicker {
@@ -156,5 +160,13 @@ textarea:focus-visible {
 
   .field-control {
     @apply mt-2 min-h-12 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-sm font-medium text-ink outline-none transition placeholder:text-slate-400 focus:border-emergency-500 focus:ring-4 focus:ring-emergency-100;
+  }
+
+  .screen-header {
+    @apply sticky top-0 z-10 -mx-4 border-b border-slate-100 bg-app/95 px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur sm:-mx-5 sm:px-5;
+  }
+
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 }

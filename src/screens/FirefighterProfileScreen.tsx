@@ -57,7 +57,7 @@ export function FirefighterProfileScreen({ navItems }: { navItems: Parameters<ty
 
   return (
     <AppShell navItems={navItems}>
-      <header className="pt-6">
+      <header className="screen-header pt-6">
         <p className="section-kicker">Perfil</p>
         <h1 className="page-heading mt-1">Gestiona tu cuenta</h1>
         <p className="mt-1 text-xs font-medium text-muted">Estado operativo, cuenta y preferencias.</p>

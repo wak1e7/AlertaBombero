@@ -21,13 +21,13 @@ export function AppShell({
   const { online, retry } = useOnlineStatus();
 
   return (
-    <main className="min-h-dvh bg-app text-ink">
-      <div className="mx-auto min-h-dvh w-full max-w-md bg-app shadow-[0_0_0_1px_rgba(15,23,42,0.03)]">
+    <main className="min-h-dvh bg-slate-100 text-ink">
+      <div className="mx-auto min-h-dvh w-full max-w-md bg-app shadow-[0_0_0_1px_rgba(15,23,42,0.05)]">
         <div className={compact ? "" : "px-4 pb-28 sm:px-5"}>
           {online ? children : <OfflineEmergencyScreen onRetry={retry} />}
         </div>
         {navItems.length > 0 ? (
-          <nav aria-label="Navegacion principal" className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200/80 bg-white/95 backdrop-blur">
+          <nav aria-label="Navegacion principal" className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200/80 bg-white/95 shadow-[0_-8px_20px_rgba(31,38,51,0.06)] backdrop-blur">
             <div className="mx-auto grid max-w-md grid-cols-3 gap-1 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
               {navItems.map((item) => {
                 const Icon = item.icon;

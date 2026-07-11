@@ -105,7 +105,7 @@ export function CitizenTrackingScreen() {
 
   return (
     <AppShell>
-      <header className="flex items-center gap-3 pt-5">
+      <header className="screen-header flex items-center gap-3 pt-5">
         <Link aria-label={backLabel} className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-ink shadow-soft" to={backPath}>
           <ArrowLeft className="h-5 w-5" />
         </Link>

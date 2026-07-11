@@ -77,7 +77,7 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
 
   return (
     <AppShell navItems={navItems}>
-      <header className="pt-5">
+      <header className="screen-header pt-5">
         <div className="flex items-center justify-between"><BrandLogo withName /><span className="relative grid h-9 w-9 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><Bell className="h-4 w-4" /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emergency-600" /></span></div>
         <div className="mt-6 flex items-end justify-between">
           <div><p className="section-kicker">Operaciones</p><h1 className="page-heading mt-1">Reportes</h1></div>

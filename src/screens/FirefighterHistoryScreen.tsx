@@ -46,7 +46,7 @@ export function FirefighterHistoryScreen({ navItems }: { navItems: Parameters<ty
 
   return (
     <AppShell navItems={navItems}>
-      <header className="flex items-center justify-between pt-6">
+      <header className="screen-header flex items-center justify-between pt-6">
         <div>
           <p className="section-kicker">Historial</p>
           <h1 className="page-heading mt-1">Reportes finalizados</h1>
