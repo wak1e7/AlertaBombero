@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, RefreshCw } from "lucide-react";
 import { AppShell } from "../components/AppShell";
+import { ReportTypeIcon } from "../components/ReportTypeIcon";
 import { StatusBadge } from "../components/StatusBadge";
 import { getSupabaseClient } from "../lib/supabase";
 import {
@@ -47,12 +48,13 @@ export function FirefighterHistoryScreen({ navItems }: { navItems: Parameters<ty
     <AppShell navItems={navItems}>
       <header className="flex items-center justify-between pt-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-emergency-600">Historial</p>
-          <h1 className="mt-1 text-2xl font-black text-ink">Reportes finalizados</h1>
+          <p className="section-kicker">Historial</p>
+          <h1 className="page-heading mt-1">Reportes finalizados</h1>
+          <p className="mt-1 text-xs font-medium text-muted">Historial de mi compania</p>
         </div>
         <button
           aria-label="Actualizar historial"
-          className="grid h-10 w-10 place-items-center rounded-full bg-white text-emergency-600 shadow-soft"
+          className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-emergency-600 shadow-soft"
           onClick={loadReports}
           type="button"
         >
@@ -63,7 +65,7 @@ export function FirefighterHistoryScreen({ navItems }: { navItems: Parameters<ty
       {error ? <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</p> : null}
       {loading ? <p className="mt-6 text-sm font-semibold text-muted" role="status">Cargando historial...</p> : null}
       {!loading && reports.length === 0 ? (
-        <p className="mt-6 rounded-lg border border-slate-200 bg-white p-4 text-sm font-semibold text-muted">
+        <p className="app-card mt-6 p-4 text-sm font-semibold text-muted">
           Aun no hay reportes finalizados en tu compania.
         </p>
       ) : null}
@@ -71,10 +73,11 @@ export function FirefighterHistoryScreen({ navItems }: { navItems: Parameters<ty
       <section className="mt-5 space-y-3">
         {reports.map((report) => (
           <Link
-            className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-soft"
+            className="app-card flex items-center gap-3 p-3.5 transition hover:border-emergency-200"
             key={report.id}
             to={`/bombero/reportes/${report.id}?from=historial`}
           >
+            <ReportTypeIcon type={report.type} />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-black text-ink">{report.type}</p>

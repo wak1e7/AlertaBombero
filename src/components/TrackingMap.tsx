@@ -15,8 +15,8 @@ export function TrackingMap({
   const firefighterPosition: [number, number] | null = firefighter ? [firefighter.latitude, firefighter.longitude] : null;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-      <MapContainer center={center} className="h-64 w-full" scrollWheelZoom={false} zoom={14}>
+    <div className="app-card overflow-hidden">
+      <MapContainer center={center} className="h-60 w-full sm:h-64" scrollWheelZoom={false} zoom={14}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

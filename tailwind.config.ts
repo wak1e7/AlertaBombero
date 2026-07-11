@@ -6,22 +6,24 @@ export default {
     extend: {
       colors: {
         emergency: {
-          50: "#FEF2F2",
-          100: "#FEE2E2",
-          500: "#EF4444",
-          600: "#D62828",
-          700: "#B91C1C"
+          50: "#FFF3F2",
+          100: "#FFE3E0",
+          200: "#FFC8C2",
+          500: "#F22924",
+          600: "#DD1714",
+          700: "#B81815"
         },
         surface: "#FFFFFF",
-        app: "#F8FAFC",
-        ink: "#111827",
-        muted: "#6B7280",
-        success: "#16A34A",
-        info: "#2563EB",
-        warning: "#F59E0B"
+        app: "#FCFCFD",
+        ink: "#1B1D22",
+        muted: "#70757E",
+        success: "#16A15A",
+        info: "#2879E7",
+        warning: "#D97706"
       },
       boxShadow: {
-        soft: "0 18px 50px rgba(17, 24, 39, 0.08)"
+        soft: "0 3px 14px rgba(31, 38, 51, 0.07)",
+        floating: "0 12px 28px rgba(31, 38, 51, 0.13)"
       }
     }
   },

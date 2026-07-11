@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ChevronRight, Navigation, RefreshCw } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { InAppNotificationBanner } from "../components/InAppNotificationBanner";
+import { ReportTypeIcon } from "../components/ReportTypeIcon";
 import { StatusBadge } from "../components/StatusBadge";
 import { distanceInKilometers, formatApproximateDistance } from "../domain/distance";
 import type { Coordinate } from "../domain/location";
@@ -72,12 +73,12 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
     <AppShell navItems={navItems}>
       <header className="flex items-center justify-between pt-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-emergency-600">Bombero</p>
-          <h1 className="mt-1 text-2xl font-black text-ink">Reportes activos</h1>
+          <p className="section-kicker">Operaciones</p>
+          <h1 className="page-heading mt-1">Reportes</h1>
         </div>
         <button
           aria-label="Actualizar reportes"
-          className="grid h-10 w-10 place-items-center rounded-full bg-white text-emergency-600 shadow-soft"
+          className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-emergency-600 shadow-soft"
           onClick={loadReports}
           type="button"
         >
@@ -89,7 +90,7 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
       <InAppNotificationBanner notification={notification} onDismiss={() => setNotification(null)} />
       {loading ? <p className="mt-6 text-sm font-semibold text-muted" role="status">Cargando reportes...</p> : null}
       {!loading && reports.length === 0 ? (
-        <p className="mt-6 rounded-lg border border-slate-200 bg-white p-4 text-sm font-semibold text-muted">
+        <p className="app-card mt-6 p-4 text-sm font-semibold text-muted">
           No hay reportes activos asignados a tu compania.
         </p>
       ) : null}
@@ -97,10 +98,11 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
       <section className="mt-5 space-y-3">
         {reports.map((report) => (
           <Link
-            className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-soft"
+            className="app-card flex items-center gap-3 p-3.5 transition hover:border-emergency-200"
             key={report.id}
             to={`/bombero/reportes/${report.id}`}
           >
+            <ReportTypeIcon type={report.type} />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-black text-ink">{report.type}</p>

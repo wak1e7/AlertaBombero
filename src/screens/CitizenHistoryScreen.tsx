@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { AppShell } from "../components/AppShell";
+import { ReportTypeIcon } from "../components/ReportTypeIcon";
 import { StatusBadge } from "../components/StatusBadge";
 import type { EmergencyStatus } from "../domain/emergencyStatus";
 import { getSupabaseClient } from "../lib/supabase";
@@ -46,22 +47,24 @@ export function CitizenHistoryScreen({ navItems }: { navItems: Parameters<typeof
   return (
     <AppShell navItems={navItems}>
       <header className="pt-6">
-        <p className="text-xs font-bold uppercase tracking-wide text-emergency-600">Historial</p>
-        <h1 className="mt-1 text-2xl font-black text-ink">Tus reportes</h1>
+        <p className="section-kicker">Historial</p>
+        <h1 className="page-heading mt-1">Mis reportes</h1>
+        <p className="mt-1 text-xs font-medium text-muted">Consulta el estado de tus reportes.</p>
       </header>
       <section className="mt-5 space-y-3">
         {loading ? <p className="text-sm font-semibold text-muted" role="status">Cargando reportes...</p> : null}
         {!loading && reports.length === 0 ? (
-          <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm font-semibold text-muted">
+          <p className="app-card p-4 text-sm font-semibold text-muted">
             Aun no tienes reportes enviados.
           </p>
         ) : null}
         {reports.map((report) => (
           <Link
-            className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-soft"
+            className="app-card flex items-center gap-3 p-3.5 transition hover:border-emergency-200"
             key={report.id}
             to={`/ciudadano/seguimiento/${report.id}`}
           >
+            <ReportTypeIcon type={report.type} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="truncate text-sm font-black text-ink">{report.type}</p>

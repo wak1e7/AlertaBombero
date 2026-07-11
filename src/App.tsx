@@ -4,15 +4,16 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate } from "react
 import {
   Bell,
   ClipboardList,
-  Flame,
   History,
   Home,
+  MapPin,
   ShieldCheck,
   UserRound,
   UsersRound
 } from "lucide-react";
 import { AppShell } from "./components/AppShell";
 import { AuthCard } from "./components/AuthCard";
+import { BrandLogo } from "./components/BrandLogo";
 import { EmergencyButton } from "./components/EmergencyButton";
 import { StatusBadge } from "./components/StatusBadge";
 import { demoCredentials } from "./domain/demoCredentials";
@@ -149,15 +150,15 @@ export function App() {
 function RoleAccessScreen() {
   return (
     <AppShell compact>
-      <section className="flex min-h-dvh flex-col justify-between px-5 py-8">
-        <div className="pt-7 text-center">
-          <BrandMark large />
-          <h1 className="mt-5 text-3xl font-black text-emergency-600">AlertaBombero</h1>
-          <p className="mt-2 text-sm font-medium text-muted">Reporta emergencias en tiempo real</p>
+      <section className="flex min-h-dvh flex-col justify-between px-4 py-7 sm:px-5">
+        <div className="pt-4 text-center">
+          <div className="mx-auto w-fit"><BrandLogo large /></div>
+          <h1 className="mt-4 text-3xl font-black text-ink">Alerta<span className="text-emergency-600">Bombero</span></h1>
+          <p className="mt-1 text-sm font-medium text-muted">Reporta emergencias en tiempo real</p>
         </div>
 
         <div className="space-y-3">
-          <p className="text-center text-sm font-semibold text-ink">Como deseas continuar?</p>
+          <p className="text-center text-sm font-bold text-ink">Como deseas continuar?</p>
           <RoleCard
             href="/ciudadano/login"
             icon={<UsersRound className="h-7 w-7" />}
@@ -173,9 +174,10 @@ function RoleAccessScreen() {
           />
         </div>
 
-        <p className="text-center text-xs font-medium text-muted">
-          Ante una emergencia, llama al 116 si no tienes internet.
-        </p>
+        <div className="border-t border-slate-100 pt-4 text-center">
+          <p className="text-xs font-medium text-muted">Juntos protegemos vidas y nuestra comunidad.</p>
+          <p className="mt-1 text-[11px] font-bold text-emergency-600">Ante una emergencia, actua con calma y seguridad.</p>
+        </div>
       </section>
     </AppShell>
   );
@@ -197,21 +199,21 @@ function RoleCard({
   return (
     <Link
       to={href}
-      className={`flex items-center gap-4 rounded-lg border p-4 transition active:scale-[0.99] ${
+      className={`flex min-h-[76px] items-center gap-4 rounded-lg border p-4 shadow-soft transition active:scale-[0.99] ${
         featured
-          ? "border-emergency-600 bg-emergency-600 text-white shadow-soft"
-          : "border-emergency-100 bg-white text-ink"
+          ? "border-emergency-600 bg-emergency-600 text-white"
+          : "border-emergency-200 bg-white text-ink hover:bg-emergency-50"
       }`}
     >
       <span
-        className={`grid h-12 w-12 place-items-center rounded-full ${
+        className={`grid h-11 w-11 place-items-center rounded-full ${
           featured ? "bg-white/15" : "bg-emergency-50 text-emergency-600"
         }`}
       >
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-base font-bold">{title}</span>
+        <span className="block text-sm font-extrabold">{title}</span>
         <span className={`mt-1 block text-xs ${featured ? "text-white/85" : "text-muted"}`}>
           {description}
         </span>
@@ -561,8 +563,8 @@ function WelcomeScreen({ role }: { role: "citizen" | "firefighter" }) {
     <AppShell>
       <div className="grid min-h-dvh place-items-center px-5">
         <div className="text-center">
-          <BrandMark large />
-          <h1 className="mt-5 text-3xl font-black text-emergency-600">
+          <div className="mx-auto w-fit"><BrandLogo large /></div>
+          <h1 className="mt-5 text-3xl font-black text-ink">
             Bienvenido, {role === "firefighter" ? "bombero" : "ciudadano"}
           </h1>
           <p className="mt-3 text-sm text-muted">Tu cuenta esta verificada para continuar.</p>
@@ -589,10 +591,10 @@ function TextInput({
   value: string;
 }) {
   return (
-    <label className="block text-left text-sm font-semibold text-ink">
+    <label className="field-label text-left">
       {label}
       <input
-        className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-medium outline-none transition focus:border-emergency-500 focus:ring-4 focus:ring-emergency-100"
+        className="field-control"
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         type={type}
@@ -614,7 +616,7 @@ function FormError({ message }: { message: string }) {
 
 function DemoHint({ lines }: { lines: string[] }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs font-semibold text-muted">
+    <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-3 text-xs font-semibold text-muted">
       {lines.map((line) => (
         <p key={line}>{line}</p>
       ))}
@@ -632,13 +634,23 @@ function CitizenHome() {
 
   return (
     <AppShell navItems={citizenNavItems}>
-      <DashboardHeader eyebrow="Ciudadano" title="Hola, ciudadano" />
-      <section className="mt-5 rounded-lg border border-emergency-100 bg-white p-4 shadow-soft">
-        <p className="text-sm font-semibold text-ink">Necesitas ayuda de emergencia?</p>
-        <p className="mt-1 text-xs text-muted">Inicia un reporte rapido y seguro.</p>
-        <div className="mt-8 flex justify-center">
+      <DashboardHeader eyebrow="Bienvenido" title="Juan Perez" />
+      <section className="app-card mt-5 p-4">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><MapPin className="h-5 w-5" /></span>
+          <div>
+            <p className="text-xs font-bold text-muted">Ubicacion actual</p>
+            <p className="mt-0.5 text-sm font-extrabold text-ink">San Miguel, Lima</p>
+          </div>
+        </div>
+      </section>
+      <section className="mt-10 text-center">
+        <p className="text-lg font-black text-ink">Necesitas ayuda de emergencia?</p>
+        <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-muted">Inicia un reporte rapido y agrega la informacion necesaria.</p>
+        <div className="mt-7 flex justify-center">
           <EmergencyButton onClick={() => navigate("/ciudadano/reporte")} />
         </div>
+        <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-success"><ShieldCheck className="h-3.5 w-3.5" /> Listo para reportar</p>
       </section>
     </AppShell>
   );
@@ -647,18 +659,23 @@ function CitizenHome() {
 export function FirefighterHome() {
   return (
     <AppShell navItems={firefighterNavItems}>
-      <DashboardHeader eyebrow="Bombero" title="Panel operativo" />
-      <section className="mt-5 rounded-lg border border-emergency-100 bg-white p-4 shadow-soft">
+      <DashboardHeader eyebrow="Bienvenido" title="Carlos Ramirez" />
+      <section className="app-card mt-5 p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-ink">Compania asignada</p>
-            <p className="mt-1 text-xs text-muted">Estado operativo en linea</p>
+            <p className="text-xs font-bold text-muted">Compania asignada</p>
+            <p className="mt-1 text-sm font-extrabold text-ink">Compania N 12 - San Miguel</p>
           </div>
           <StatusBadge status="RECIBIDO" />
         </div>
-        <div className="mt-8 flex justify-center">
+      </section>
+      <section className="mt-9 text-center">
+        <p className="text-lg font-black text-ink">Necesitas reportar una emergencia?</p>
+        <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-muted">Registra una alerta operativa desde tu ubicacion actual.</p>
+        <div className="mt-7 flex justify-center">
           <EmergencyButton />
         </div>
+        <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-success"><ShieldCheck className="h-3.5 w-3.5" /> Listo para reportar</p>
       </section>
     </AppShell>
   );
@@ -668,20 +685,12 @@ function DashboardHeader({ eyebrow, title }: { eyebrow: string; title: string })
   return (
     <header className="pt-6">
       <div className="flex items-center justify-between">
-        <BrandMark />
-        <Bell className="h-5 w-5 text-emergency-600" />
+        <BrandLogo withName />
+        <span className="grid h-9 w-9 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><Bell className="h-4 w-4" /></span>
       </div>
-      <p className="mt-6 text-xs font-bold uppercase tracking-wide text-emergency-600">{eyebrow}</p>
+      <p className="section-kicker mt-6">{eyebrow}</p>
       <h1 className="mt-1 text-2xl font-black text-ink">{title}</h1>
     </header>
-  );
-}
-
-function BrandMark({ large = false }: { large?: boolean }) {
-  return (
-    <div className={`mx-auto grid place-items-center rounded-full bg-emergency-50 ${large ? "h-24 w-24" : "h-11 w-11"}`}>
-      <Flame className={`${large ? "h-14 w-14" : "h-6 w-6"} text-emergency-600`} />
-    </div>
   );
 }
 

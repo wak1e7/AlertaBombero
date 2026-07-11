@@ -35,6 +35,6 @@ describe("App", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("button", { name: /reportaremergencia/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /reportar emergencia/i })).toBeInTheDocument();
   });
 });

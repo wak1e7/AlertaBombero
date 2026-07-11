@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Camera, LocateFixed, MapPin } from "lucide-react";
 import { AppShell } from "../components/AppShell";
+import { BrandLogo } from "../components/BrandLogo";
+import { ReportTypeIcon } from "../components/ReportTypeIcon";
 import { StatusBadge } from "../components/StatusBadge";
 import { StatusTimeline } from "../components/StatusTimeline";
 import { TrackingMap } from "../components/TrackingMap";
@@ -130,13 +132,13 @@ export function FirefighterReportDetailScreen() {
 
   return (
     <AppShell>
-      <header className="flex items-center gap-3 pt-6">
-        <Link aria-label={backLabel} className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink shadow-soft" to={backPath}>
+      <header className="flex items-center gap-3 pt-5">
+        <Link aria-label={backLabel} className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-ink shadow-soft" to={backPath}>
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-emergency-600">Detalle</p>
-          <h1 className="text-xl font-black text-ink">Emergencia asignada</h1>
+        <div className="flex min-w-0 items-center gap-2">
+          <BrandLogo />
+          <div><h1 className="text-base font-black text-ink">Emergencia asignada</h1><p className="text-[10px] font-medium text-muted">Detalle de reporte</p></div>
         </div>
       </header>
 
@@ -145,9 +147,8 @@ export function FirefighterReportDetailScreen() {
 
       {report ? (
         <section className="mt-5 space-y-4">
-          <div className="rounded-lg border border-emergency-100 bg-white p-5 shadow-soft">
-            <StatusBadge status={report.status} />
-            <h2 className="mt-4 text-2xl font-black text-ink">{report.type}</h2>
+          <div className="app-card p-4">
+            <div className="flex items-center gap-3"><ReportTypeIcon type={report.type} /><div><StatusBadge status={report.status} /><h2 className="mt-1 text-xl font-black text-ink">{report.type}</h2></div></div>
             <p className="mt-3 text-sm font-medium text-muted">{report.description ?? "Sin descripcion adicional"}</p>
             <div className="mt-4 flex gap-3 text-sm font-medium text-muted">
               <MapPin className="h-5 w-5 text-emergency-600" />
@@ -164,7 +165,7 @@ export function FirefighterReportDetailScreen() {
           />
 
           {report.status === "EN_CAMINO" ? (
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="app-card p-4">
               <p className="flex items-center gap-2 text-sm font-black text-ink">
                 <LocateFixed className="h-5 w-5 text-emergency-600" />
                 Ubicacion en vivo
@@ -178,7 +179,7 @@ export function FirefighterReportDetailScreen() {
             </div>
           ) : null}
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="app-card p-4">
             <p className="flex items-center gap-2 text-sm font-black text-ink">
               <Camera className="h-5 w-5 text-emergency-600" />
               Evidencia

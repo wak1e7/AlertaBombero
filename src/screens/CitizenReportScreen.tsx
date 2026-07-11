@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, MapPin, Phone, RefreshCw, Send, Upload, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, MapPin, Phone, RefreshCw, Send, ShieldCheck, Upload, X } from "lucide-react";
+import { BrandLogo } from "../components/BrandLogo";
+import { ReportTypeIcon } from "../components/ReportTypeIcon";
 import { AppShell } from "../components/AppShell";
 import { emergencyTypes, validateReportDraft, type ReportLocation } from "../domain/report";
 import { getSupabaseClient } from "../lib/supabase";
@@ -118,21 +120,20 @@ export function CitizenReportScreen() {
 
   return (
     <AppShell>
-      <header className="flex items-center gap-3 pt-6">
-        <Link className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink shadow-soft" to="/ciudadano/inicio">
+      <header className="flex items-center gap-3 pt-5">
+        <Link aria-label="Volver al inicio" className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-ink shadow-soft" to="/ciudadano/inicio">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-emergency-600">Reporte ciudadano</p>
-          <h1 className="text-xl font-black text-ink">Nueva emergencia</h1>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2"><BrandLogo /><div><h1 className="text-base font-black text-ink">Nueva emergencia</h1><p className="text-[10px] font-medium text-muted">Paso {step === "details" ? "1" : step === "evidence" ? "2" : "3"} de 3</p></div></div>
         </div>
       </header>
 
-      <div className="mt-6 flex gap-2">
+      <div className="mt-5 flex gap-1.5">
         {["details", "evidence", "summary"].map((name) => (
           <span
             key={name}
-            className={`h-2 flex-1 rounded-full ${
+            className={`h-1 flex-1 rounded-full ${
               step === name || (step === "countdown" && name === "summary") ? "bg-emergency-600" : "bg-slate-200"
             }`}
           />
@@ -142,13 +143,14 @@ export function CitizenReportScreen() {
       <FormError message={error} />
 
       {step === "details" ? (
-        <section className="mt-5 space-y-5">
+        <section className="mt-6 space-y-5">
           <div>
-            <p className="text-sm font-black text-ink">Tipo de emergencia</p>
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <p className="text-sm font-black text-ink">1. Selecciona el tipo de emergencia</p>
+            <div className="mt-3 grid grid-cols-4 gap-2">
               {emergencyTypes.map((item) => (
                 <button
-                  className={`rounded-lg border p-3 text-left text-sm font-bold ${
+                  aria-pressed={type === item.value}
+                  className={`grid min-h-20 place-items-center rounded-lg border p-2 text-center text-[11px] font-bold transition ${
                     type === item.value
                       ? "border-emergency-600 bg-emergency-50 text-emergency-700"
                       : "border-slate-200 bg-white text-ink"
@@ -157,40 +159,38 @@ export function CitizenReportScreen() {
                   onClick={() => setType(item.value)}
                   type="button"
                 >
-                  {item.label}
+                  <ReportTypeIcon size="small" type={item.label} />
+                  <span>{item.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <label className="block text-sm font-semibold text-ink">
-            Descripcion breve
+          <div className="app-card overflow-hidden">
+            <div className="h-32 bg-[linear-gradient(135deg,#f3f0e8_0%,#e7f1df_45%,#faf4e8_100%)] p-4">
+              <span className="inline-flex rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-ink shadow-soft"><MapPin className="mr-1 h-3.5 w-3.5 text-emergency-600" /> Ubicacion actual</span>
+            </div>
+            <div className="p-4">
+              <p className="text-sm font-black text-ink">2. Verifica tu ubicacion</p>
+              <p className="mt-1 text-xs font-medium text-muted">
+                {location ? `${location.addressText} (${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)})` : "Aun no detectada"}
+              </p>
+              <button className="btn-secondary mt-3 min-h-10 py-2 text-xs" disabled={locating} onClick={locate} type="button">
+                <RefreshCw className="h-4 w-4" />{locating ? "Detectando..." : "Actualizar ubicacion"}
+              </button>
+            </div>
+          </div>
+
+          <label className="field-label">
+            3. Descripcion breve <span className="font-medium text-muted">(opcional)</span>
             <textarea
-              className="mt-2 min-h-28 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:border-emergency-500 focus:ring-4 focus:ring-emergency-100"
+              className="field-control min-h-24 resize-none"
               maxLength={500}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Ej. Humo saliendo de una vivienda..."
               value={description}
             />
           </label>
-
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="flex items-start gap-3">
-              <MapPin className="mt-1 h-5 w-5 text-emergency-600" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-black text-ink">Ubicacion</p>
-                <p className="mt-1 text-xs font-medium text-muted">
-                  {location
-                    ? `${location.addressText} (${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)})`
-                    : "Aun no detectada"}
-                </p>
-              </div>
-            </div>
-            <button className="btn-secondary mt-4" disabled={locating} onClick={locate} type="button">
-              <RefreshCw className="h-4 w-4" />
-              {locating ? "Detectando..." : "Actualizar ubicacion"}
-            </button>
-          </div>
 
           <button className="btn-primary" onClick={() => setStep("evidence")} type="button">
             Continuar
@@ -199,11 +199,12 @@ export function CitizenReportScreen() {
       ) : null}
 
       {step === "evidence" ? (
-        <section className="mt-5 space-y-5">
-          <div className="rounded-lg border border-dashed border-emergency-200 bg-white p-5 text-center">
+        <section className="mt-6 space-y-5">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-800"><AlertTriangle className="mr-2 inline h-4 w-4" />La evidencia es obligatoria. Ayuda a los bomberos a evaluar mejor la situacion.</div>
+          <div className="app-card p-5 text-center">
             <Upload className="mx-auto h-9 w-9 text-emergency-600" />
-            <p className="mt-3 text-sm font-black text-ink">Adjunta foto o video</p>
-            <p className="mt-1 text-xs text-muted">La evidencia es obligatoria y puede pesar hasta 20 MB.</p>
+            <p className="mt-3 text-sm font-black text-ink">1. Adjunta una foto o video</p>
+            <p className="mt-1 text-xs text-muted">Formatos permitidos: JPG, PNG, MP4. Maximo 20 MB.</p>
             <label className="btn-secondary mt-5 cursor-pointer">
               Seleccionar archivo
               <input
@@ -232,7 +233,9 @@ export function CitizenReportScreen() {
       ) : null}
 
       {step === "summary" ? (
-        <section className="mt-5 space-y-4">
+        <section className="mt-6 space-y-4">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-800"><AlertTriangle className="mr-2 inline h-4 w-4" />Ultimo paso. Una vez enviado, la compania sera notificada.</div>
+          <p className="text-sm font-black text-ink">Resumen de tu reporte</p>
           <SummaryRow label="Tipo" value={emergencyTypes.find((item) => item.value === type)?.label ?? "Sin seleccionar"} />
           <SummaryRow label="Ubicacion" value={location?.addressText ?? "Sin ubicacion"} />
           <SummaryRow label="Evidencia" value={evidence?.name ?? "Sin evidencia"} />
@@ -250,7 +253,7 @@ export function CitizenReportScreen() {
 
       {step === "countdown" ? (
         <section className="mt-10 text-center">
-          <div className="mx-auto grid h-44 w-44 place-items-center rounded-full bg-emergency-600 text-6xl font-black text-white shadow-[0_20px_60px_rgba(214,40,40,0.36)]">
+          <div className="mx-auto grid h-44 w-44 place-items-center rounded-full border-[4px] border-emergency-600 bg-white text-6xl font-black text-ink shadow-soft">
             {sending ? "..." : countdown}
           </div>
           <p className="mt-6 text-sm font-bold text-ink">
@@ -291,7 +294,7 @@ function FormError({ message }: { message: string }) {
 function OfflineEmergencyScreen({ onRetry }: { onRetry: () => void }) {
   return (
     <AppShell>
-      <section className="grid min-h-dvh place-items-center">
+      <section className="grid min-h-dvh place-items-center px-4">
         <div className="text-center">
           <Phone className="mx-auto h-12 w-12 text-emergency-600" />
           <h1 className="mt-5 text-2xl font-black text-ink">Sin conexion</h1>
