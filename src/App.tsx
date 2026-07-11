@@ -426,7 +426,7 @@ function FirefighterLoginScreen() {
             label="Codigo de bombero"
             value={form.firefighterCode}
             onChange={(firefighterCode) => setForm((current) => ({ ...current, firefighterCode }))}
-            placeholder="B-204"
+            placeholder="A24982"
           />
           <TextInput
             label="Contrasena"
@@ -695,7 +695,7 @@ export function FirefighterHome() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-muted">Compania asignada</p>
-            <p className="mt-1 text-sm font-extrabold text-ink">Compania N 12 - San Miguel</p>
+            <p className="mt-1 text-sm font-extrabold text-ink">Cuerpo de Bomberos - Chiclayo</p>
           </div>
           <StatusBadge status="RECIBIDO" />
         </div>

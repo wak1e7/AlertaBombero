@@ -33,7 +33,7 @@ describe("FirefighterProfileScreen", () => {
   beforeEach(() => {
     authGetSession.mockResolvedValue({ data: { session: { user: { id: "auth-firefighter" } } } });
     profileMaybeSingle.mockResolvedValue({
-      data: { firefighter_code: "B-204", last_name: "Rojas", name: "Ana", phone: "+51999111222" }
+      data: { firefighter_code: "A27001", last_name: "Rojas", name: "Ana", phone: "+51999111222" }
     });
   });
 

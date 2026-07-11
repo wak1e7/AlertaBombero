@@ -4,8 +4,8 @@ export const demoCredentials = {
     phone: "+51999888777"
   },
   firefighters: [
-    { code: "B-204", password: "bombero123" },
-    { code: "B-205", password: "bombero123" },
-    { code: "B-301", password: "bombero123" }
+    { code: "A27001", password: "bombero123" },
+    { code: "A27002", password: "bombero123" },
+    { code: "A10801", password: "bombero123" }
   ]
 } as const;

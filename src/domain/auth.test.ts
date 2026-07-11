@@ -15,8 +15,8 @@ describe("auth domain helpers", () => {
     expect(buildTechnicalEmail("+51999888777", "citizen")).toBe(
       "c-51999888777@ciudadano.alertabombero.app"
     );
-    expect(buildTechnicalEmail("B-204", "firefighter")).toBe(
-      "b-204@bombero.alertabombero.app"
+    expect(buildTechnicalEmail("A27001", "firefighter")).toBe(
+      "a27001@bombero.alertabombero.app"
     );
   });
 
@@ -38,6 +38,8 @@ describe("auth domain helpers", () => {
   it("rejects weak or incomplete auth inputs", () => {
     expect(validatePhoneLogin({ phone: "123", password: "123" }).success).toBe(false);
     expect(validateFirefighterLogin({ firefighterCode: "", password: "123" }).success).toBe(false);
+    expect(validateFirefighterLogin({ firefighterCode: "B-204", password: "bombero123" }).success).toBe(false);
+    expect(validateFirefighterLogin({ firefighterCode: "a27001", password: "bombero123" }).success).toBe(true);
   });
 
   it("maps auth flows to simulated OTP purposes", () => {

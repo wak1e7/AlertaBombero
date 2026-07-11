@@ -85,7 +85,7 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
         </div>
       </header>
       <button className="app-card mt-5 flex w-full items-center justify-between p-3 text-left" type="button">
-        <span><span className="block text-[10px] font-bold uppercase tracking-wide text-muted">Compania activa</span><span className="mt-0.5 block text-sm font-black text-ink">Compania N 12 - San Miguel</span></span><ChevronDown className="h-4 w-4 text-emergency-600" />
+        <span><span className="block text-[10px] font-bold uppercase tracking-wide text-muted">Cobertura operativa</span><span className="mt-0.5 block text-sm font-black text-ink">Cuerpo de Bomberos - Chiclayo</span></span><ChevronDown className="h-4 w-4 text-emergency-600" />
       </button>
       <div className="mt-4 grid grid-cols-3 rounded-lg bg-slate-100 p-1">
         <FilterButton active={filter === "all"} count={reports.length} label="Todos" onClick={() => setFilter("all")} />

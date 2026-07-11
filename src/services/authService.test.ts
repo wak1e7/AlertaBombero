@@ -102,12 +102,12 @@ describe("authService", () => {
     const service = createAuthService(client);
 
     const result = await service.loginFirefighter({
-      firefighterCode: "B-204",
+      firefighterCode: "A27001",
       password: "bombero123"
     });
 
     expect(client.auth.signInWithPassword).toHaveBeenCalledWith({
-      email: "b-204@bombero.alertabombero.app",
+      email: "a27001@bombero.alertabombero.app",
       password: "bombero123"
     });
     expect(client.from).toHaveBeenCalledWith("profiles");
@@ -126,7 +126,7 @@ describe("authService", () => {
 
     await expect(
       service.loginFirefighter({
-        firefighterCode: "B-204",
+        firefighterCode: "A27001",
         password: "bombero123"
       })
     ).rejects.toThrow("Invalid login credentials");

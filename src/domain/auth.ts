@@ -35,7 +35,7 @@ export const phoneLoginSchema = z.object({
 });
 
 export const firefighterLoginSchema = z.object({
-  firefighterCode: z.string().trim().min(2, "Ingresa tu codigo de bombero."),
+  firefighterCode: z.string().trim().toUpperCase().regex(/^A\d{5}$/, "El codigo debe tener el formato A12345."),
   password: passwordSchema
 });
 

@@ -10,7 +10,7 @@ describe("demo credentials", () => {
   });
 
   it("documents preloaded firefighter demo accounts", () => {
-    expect(demoCredentials.firefighters.map((item) => item.code)).toEqual(["B-204", "B-205", "B-301"]);
+    expect(demoCredentials.firefighters.map((item) => item.code)).toEqual(["A27001", "A27002", "A10801"]);
     expect(demoCredentials.firefighters.every((item) => item.password === "bombero123")).toBe(true);
   });
 });
