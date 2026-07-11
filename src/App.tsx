@@ -644,7 +644,7 @@ function CitizenHome() {
   );
 }
 
-function FirefighterHome() {
+export function FirefighterHome() {
   return (
     <AppShell navItems={firefighterNavItems}>
       <DashboardHeader eyebrow="Bombero" title="Panel operativo" />

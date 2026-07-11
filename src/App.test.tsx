@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
-import { App } from "./App";
+import { App, FirefighterHome } from "./App";
 
 describe("App", () => {
   it("renders the role access screen as the first experience", () => {
@@ -25,5 +26,15 @@ describe("App", () => {
     await userEvent.click(screen.getByRole("button", { name: "Ingresar" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(/telefono/i);
+  });
+
+  it("keeps the firefighter emergency action visible on the operational home", () => {
+    render(
+      <MemoryRouter initialEntries={["/bombero/inicio"]}>
+        <FirefighterHome />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("button", { name: /reportaremergencia/i })).toBeInTheDocument();
   });
 });
