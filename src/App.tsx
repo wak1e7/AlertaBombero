@@ -155,18 +155,18 @@ function RoleAccessScreen() {
   return (
     <AppShell compact>
       <section
-        className="relative isolate min-h-dvh overflow-hidden bg-white px-5 pb-8 pt-9 sm:px-7"
+        className="mobile-static-screen relative isolate h-dvh overflow-hidden bg-white px-5 pb-5 pt-5 sm:px-7"
         style={{ backgroundImage: `url(${accessHeroBackground})`, backgroundPosition: "center bottom", backgroundRepeat: "no-repeat", backgroundSize: "100% auto" }}
       >
-        <div className="relative mx-auto flex min-h-[calc(100dvh-4rem)] max-w-sm flex-col">
-          <header className="pt-5 text-center">
+        <div className="mobile-access-content relative mx-auto flex h-full max-w-sm flex-col">
+          <header className="mobile-access-header pt-1 text-center">
             <div className="mx-auto w-fit"><BrandLogo large /></div>
             <h1 className="mt-4 text-[2.35rem] font-black leading-none tracking-[-0.045em] text-emergency-700">AlertaBombero</h1>
             <p className="mt-3 text-base font-medium tracking-[-0.01em] text-slate-500">Reporta emergencias en tiempo real</p>
             <div className="mx-auto mt-7 flex w-28 items-center justify-center gap-2" aria-hidden="true"><span className="h-0.5 w-9 bg-emergency-600" /><span className="h-2.5 w-2.5 rounded-full bg-emergency-600" /><span className="h-0.5 w-9 bg-emergency-600" /></div>
           </header>
 
-          <div className="mt-12 space-y-3">
+          <div className="mobile-access-choices mt-7 space-y-3">
             <p className="text-center text-xl font-black tracking-[-0.02em] text-ink">Como deseas continuar?</p>
           <RoleCard
             href="/ciudadano/login"
@@ -183,12 +183,12 @@ function RoleAccessScreen() {
           />
           </div>
 
-          <div className="mt-7 grid grid-cols-2 gap-3">
+          <div className="mobile-access-trust mt-5 grid grid-cols-2 gap-3">
             <TrustCard icon={<LockKeyhole className="h-6 w-6" />} title="Datos seguros" description="Tu informacion esta protegida y encriptada." />
             <TrustCard icon={<TimerReset className="h-6 w-6" />} title="Respuesta rapida" description="Conexion directa con bomberos y estaciones." />
           </div>
 
-          <footer className="mt-auto pt-10 text-center">
+          <footer className="mobile-access-footer mt-auto pt-5 text-center">
             <div className="flex items-center gap-3" aria-hidden="true"><span className="h-px flex-1 bg-slate-300" /><span className="grid h-9 w-9 place-items-center rounded-full border-2 border-emergency-600 bg-white text-emergency-600"><ShieldCheck className="h-4 w-4" /></span><span className="h-px flex-1 bg-slate-300" /></div>
             <p className="mt-5 text-sm font-medium text-slate-500">Juntos protegemos vidas y nuestra comunidad.</p>
             <p className="mt-3 text-sm font-bold text-emergency-700">Ante una emergencia, actua con calma y seguridad.</p>
@@ -453,12 +453,13 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verificationComplete, setVerificationComplete] = useState(false);
 
   useEffect(() => {
-    if (!pending || pending.role !== expectedRole) {
+    if (!verificationComplete && (!pending || pending.role !== expectedRole)) {
       navigate(expectedRole === "citizen" ? "/ciudadano/login" : "/bombero/login", { replace: true });
     }
-  }, [expectedRole, navigate, pending]);
+  }, [expectedRole, navigate, pending, verificationComplete]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -481,6 +482,12 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
     try {
       const sessionId = createActiveSessionId();
       await authService().markPhoneVerified(pending.profileId, sessionId);
+      const { data: sessionData } = await getSupabaseClient().auth.getSession();
+      if (!sessionData.session) {
+        throw new Error("Tu sesion expiro. Vuelve a iniciar sesion.");
+      }
+
+      setVerificationComplete(true);
       saveActiveSessionId(sessionId);
       clearPendingAuth();
       navigate(pending.welcomePath);

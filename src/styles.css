@@ -49,6 +49,86 @@ textarea:focus-visible {
   color: #b81815;
 }
 
+@media (max-height: 900px) {
+  .mobile-access-header .h-28 {
+    height: 5.25rem;
+    width: 5.25rem;
+  }
+
+  .mobile-access-header h1 {
+    font-size: 2rem;
+  }
+
+  .mobile-access-header > p {
+    font-size: 0.875rem;
+  }
+
+  .mobile-access-header > div:last-child {
+    margin-top: 1rem;
+  }
+
+  .mobile-access-choices {
+    margin-top: 1.25rem;
+  }
+
+  .mobile-access-choices > a {
+    min-height: 6.25rem;
+    border-radius: 1rem;
+    padding: 0.875rem;
+  }
+
+  .mobile-access-choices > a > span:first-child {
+    height: 3.5rem;
+    width: 3.5rem;
+  }
+
+  .mobile-access-choices > a > span:nth-child(2) > span:first-child {
+    font-size: 1.2rem;
+  }
+
+  .mobile-access-choices > a > span:nth-child(2) > span:last-child {
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  .mobile-access-trust {
+    margin-top: 0.75rem;
+  }
+
+  .mobile-access-trust article {
+    min-height: 5.75rem;
+    padding: 0.75rem;
+  }
+
+  .mobile-access-trust article > span {
+    height: 2.25rem;
+    width: 2.25rem;
+  }
+
+  .mobile-access-trust article svg {
+    height: 1.1rem;
+    width: 1.1rem;
+  }
+
+  .mobile-access-trust h2 {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .mobile-access-trust p {
+    display: none;
+  }
+
+  .mobile-access-footer {
+    padding-top: 0.75rem;
+  }
+
+  .mobile-access-footer p {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
 @layer components {
   .btn-primary {
     @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emergency-600 px-4 py-3 text-sm font-extrabold text-white shadow-soft transition duration-150 hover:bg-emergency-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60;
