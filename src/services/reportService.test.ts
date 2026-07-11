@@ -57,6 +57,7 @@ describe("report service", () => {
       p_description: "Humo en el segundo piso",
       p_latitude: -12.096,
       p_longitude: -77.036,
+      p_request_id: expect.any(String),
       p_type: "INCENDIO"
     });
     expect(upload).toHaveBeenCalledWith("report-1/1700000000000-incendio.jpg", evidence, {
@@ -86,6 +87,21 @@ describe("report service", () => {
     ).rejects.toThrow("Completa el reporte antes de enviarlo.");
 
     expect(client.rpc).not.toHaveBeenCalled();
+  });
+
+  it("uses a caller-provided request id so a retry can be idempotent", async () => {
+    const { client } = createMockClient();
+
+    await createEmergencyReport(client, {
+      description: "Humo en el segundo piso",
+      evidence,
+      location: { addressText: "Av. Lima 116", latitude: -12.096, longitude: -77.036 },
+      type: "INCENDIO"
+    }, "11111111-1111-4111-8111-111111111111");
+
+    expect(client.rpc).toHaveBeenCalledWith("create_emergency_report", expect.objectContaining({
+      p_request_id: "11111111-1111-4111-8111-111111111111"
+    }));
   });
 
   it("cancels an incomplete report when evidence upload fails", async () => {

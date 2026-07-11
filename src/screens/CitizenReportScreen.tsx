@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, CheckCircle2, MapPin, Phone, RefreshCw, Send, ShieldCheck, Upload, X } from "lucide-react";
 import { BrandLogo } from "../components/BrandLogo";
@@ -28,6 +28,8 @@ export function CitizenReportScreen() {
   const [error, setError] = useState("");
   const [locating, setLocating] = useState(false);
   const [sending, setSending] = useState(false);
+  const sendingRef = useRef(false);
+  const requestIdRef = useRef<string | null>(null);
   const online = useOnlineStatus();
 
   const validation = useMemo(
@@ -68,10 +70,12 @@ export function CitizenReportScreen() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude
         });
+        requestIdRef.current = null;
         setLocating(false);
       },
       () => {
         setLocation(fallbackLocation);
+        requestIdRef.current = null;
         setLocating(false);
       },
       { enableHighAccuracy: true, maximumAge: 15000, timeout: 8000 }
@@ -79,12 +83,15 @@ export function CitizenReportScreen() {
   }
 
   async function sendReport() {
+    if (sendingRef.current) return;
+
     if (!online) {
       setStep("summary");
       setError("No tienes conexion. Llama al 116 o intenta de nuevo cuando vuelva internet.");
       return;
     }
 
+    sendingRef.current = true;
     setSending(true);
     setError("");
 
@@ -94,12 +101,13 @@ export function CitizenReportScreen() {
         evidence,
         location,
         type
-      });
+      }, requestIdRef.current ?? crypto.randomUUID());
       navigate(`/ciudadano/seguimiento/${result.reportId}`, { replace: true });
     } catch (caught) {
       setStep("summary");
       setError(caught instanceof Error ? caught.message : "No se pudo enviar el reporte.");
     } finally {
+      sendingRef.current = false;
       setSending(false);
     }
   }
@@ -110,6 +118,7 @@ export function CitizenReportScreen() {
       setError(currentValidation.errors[0] ?? "Completa el reporte antes de enviarlo.");
       return;
     }
+    requestIdRef.current ??= crypto.randomUUID();
     setCountdown(5);
     setError("");
     setStep("countdown");
@@ -157,7 +166,10 @@ export function CitizenReportScreen() {
                       : "border-slate-200 bg-white text-ink"
                   }`}
                   key={item.value}
-                  onClick={() => setType(item.value)}
+                  onClick={() => {
+                    requestIdRef.current = null;
+                    setType(item.value);
+                  }}
                   type="button"
                 >
                   <ReportTypeIcon size="small" type={item.label} />
@@ -185,7 +197,10 @@ export function CitizenReportScreen() {
             <textarea
               className="field-control min-h-24 resize-none"
               maxLength={500}
-              onChange={(event) => setDescription(event.target.value)}
+              onChange={(event) => {
+                requestIdRef.current = null;
+                setDescription(event.target.value);
+              }}
               placeholder="Ej. Humo saliendo de una vivienda..."
               value={description}
             />
@@ -207,7 +222,10 @@ export function CitizenReportScreen() {
               <input
                 accept="image/*,video/*"
                 className="hidden"
-                onChange={(event) => setEvidence(event.target.files?.[0] ?? null)}
+                onChange={(event) => {
+                  requestIdRef.current = null;
+                  setEvidence(event.target.files?.[0] ?? null);
+                }}
                 type="file"
               />
             </label>

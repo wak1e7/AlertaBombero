@@ -24,7 +24,7 @@ type SupabaseReportClient = {
   };
 };
 
-export async function createEmergencyReport(client: SupabaseReportClient, draft: ReportDraft) {
+export async function createEmergencyReport(client: SupabaseReportClient, draft: ReportDraft, requestId: string = crypto.randomUUID()) {
   const validation = validateReportDraft(draft);
   if (!validation.ok || !(draft.evidence instanceof File) || !draft.location) {
     throw new Error("Completa el reporte antes de enviarlo.");
@@ -35,6 +35,7 @@ export async function createEmergencyReport(client: SupabaseReportClient, draft:
     p_description: draft.description.trim(),
     p_latitude: draft.location.latitude,
     p_longitude: draft.location.longitude,
+    p_request_id: requestId,
     p_type: draft.type
   });
 
