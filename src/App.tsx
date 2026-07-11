@@ -279,8 +279,8 @@ function CitizenLoginScreen() {
   }
 
   return (
-    <AppShell>
-      <AuthCard title="Iniciar sesion" subtitle="Accede a tu cuenta ciudadana">
+    <AppShell compact>
+      <AuthCard title="Iniciar sesion" subtitle="Accede a tu cuenta ciudadana" backTo="/">
         <form className="space-y-4" onSubmit={onSubmit}>
           <TextInput
             label="Telefono"
@@ -349,8 +349,8 @@ function CitizenRegisterScreen() {
   }
 
   return (
-    <AppShell>
-      <AuthCard title="Crear cuenta" subtitle="Registro ciudadano seguro">
+    <AppShell compact>
+      <AuthCard title="Crear cuenta" subtitle="Registro ciudadano seguro" backTo="/ciudadano/login" scrollable>
         <form className="space-y-3" onSubmit={onSubmit}>
           <TextInput label="Nombres" value={form.name} onChange={(name) => setForm((current) => ({ ...current, name }))} />
           <TextInput
@@ -419,8 +419,8 @@ function FirefighterLoginScreen() {
   }
 
   return (
-    <AppShell>
-      <AuthCard title="Acceso bombero" subtitle="Ingresa tus credenciales para continuar">
+    <AppShell compact>
+      <AuthCard title="Acceso bombero" subtitle="Ingresa tus credenciales para continuar" backTo="/">
         <form className="space-y-4" onSubmit={onSubmit}>
           <TextInput
             label="Codigo de bombero"
@@ -499,8 +499,8 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
   }
 
   return (
-    <AppShell>
-      <AuthCard title="Verificar identidad" subtitle="Ingresa el codigo de seguridad">
+    <AppShell compact>
+      <AuthCard title="Verificar identidad" subtitle="Ingresa el codigo de seguridad" backTo={expectedRole === "citizen" ? "/ciudadano/login" : "/bombero/login"}>
         <form className="space-y-4" onSubmit={onSubmit}>
           {isDemoAuth() ? (
             <p className="rounded-lg border border-emergency-100 bg-emergency-50 p-3 text-center text-xs font-semibold text-emergency-700">
