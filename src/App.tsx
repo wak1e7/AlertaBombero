@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import {
   Bell,
@@ -21,20 +21,20 @@ import { AuthCard } from "./components/AuthCard";
 import { BrandLogo } from "./components/BrandLogo";
 import { EmergencyButton } from "./components/EmergencyButton";
 import { StatusBadge } from "./components/StatusBadge";
-import accessHeroBackground from "./assets/access-hero-background.png";
+import accessHeroBackground from "./assets/access-hero-background-ai.png";
 import { demoCredentials } from "./domain/demoCredentials";
 import { DEMO_OTP_CODE, verifySimulatedOtp } from "./domain/otp";
 import { getAuthMode } from "./lib/env";
 import { getSupabaseClient } from "./lib/supabase";
-import { CitizenProfileScreen } from "./screens/CitizenProfileScreen";
-import { CitizenHistoryScreen } from "./screens/CitizenHistoryScreen";
-import { CitizenReportScreen } from "./screens/CitizenReportScreen";
-import { CitizenTrackingScreen } from "./screens/CitizenTrackingScreen";
-import { FirefighterProfileScreen } from "./screens/FirefighterProfileScreen";
-import { FirefighterHistoryScreen } from "./screens/FirefighterHistoryScreen";
-import { FirefighterReportDetailScreen } from "./screens/FirefighterReportDetailScreen";
-import { FirefighterReportsScreen } from "./screens/FirefighterReportsScreen";
-import { AccessibilitySettingsScreen } from "./screens/AccessibilitySettingsScreen";
+const CitizenProfileScreen = lazy(() => import("./screens/CitizenProfileScreen").then(({ CitizenProfileScreen }) => ({ default: CitizenProfileScreen })));
+const CitizenHistoryScreen = lazy(() => import("./screens/CitizenHistoryScreen").then(({ CitizenHistoryScreen }) => ({ default: CitizenHistoryScreen })));
+const CitizenReportScreen = lazy(() => import("./screens/CitizenReportScreen").then(({ CitizenReportScreen }) => ({ default: CitizenReportScreen })));
+const CitizenTrackingScreen = lazy(() => import("./screens/CitizenTrackingScreen").then(({ CitizenTrackingScreen }) => ({ default: CitizenTrackingScreen })));
+const FirefighterProfileScreen = lazy(() => import("./screens/FirefighterProfileScreen").then(({ FirefighterProfileScreen }) => ({ default: FirefighterProfileScreen })));
+const FirefighterHistoryScreen = lazy(() => import("./screens/FirefighterHistoryScreen").then(({ FirefighterHistoryScreen }) => ({ default: FirefighterHistoryScreen })));
+const FirefighterReportDetailScreen = lazy(() => import("./screens/FirefighterReportDetailScreen").then(({ FirefighterReportDetailScreen }) => ({ default: FirefighterReportDetailScreen })));
+const FirefighterReportsScreen = lazy(() => import("./screens/FirefighterReportsScreen").then(({ FirefighterReportsScreen }) => ({ default: FirefighterReportsScreen })));
+const AccessibilitySettingsScreen = lazy(() => import("./screens/AccessibilitySettingsScreen").then(({ AccessibilitySettingsScreen }) => ({ default: AccessibilitySettingsScreen })));
 import { loadAccessibilitySettings } from "./services/accessibility";
 import { createAuthService } from "./services/authService";
 import {
@@ -73,6 +73,7 @@ export function App() {
     <div className="accessibility-shell" data-bold-text={accessibility.boldText} data-color-filter={accessibility.colorFilter} data-dyslexia-font={accessibility.dyslexiaFont} data-high-contrast={accessibility.highContrast} data-large-targets={accessibility.largerTouchTargets} data-reduce-motion={accessibility.reduceMotion} data-reduce-transparency={accessibility.reduceTransparency} style={{ "--accessibility-line-spacing": accessibility.lineSpacing } as React.CSSProperties}>
       {accessibility.readingMask ? <div className="reading-mask" aria-hidden="true" /> : null}
     <BrowserRouter>
+      <Suspense fallback={<ScreenLoader />}>
       <Routes>
         <Route path="/" element={<RoleAccessScreen />} />
         <Route path="/ciudadano/login" element={<CitizenLoginScreen />} />
@@ -168,8 +169,22 @@ export function App() {
         <Route path="/bombero/configuracion" element={<ProtectedRoute role="firefighter" loginPath="/bombero/login"><AccessibilitySettingsScreen backTo="/bombero/perfil" navItems={firefighterNavItems} /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
     </div>
+  );
+}
+
+function ScreenLoader() {
+  return (
+    <AppShell compact>
+      <div className="grid min-h-dvh place-items-center bg-app px-6 text-center">
+        <div>
+          <span className="mx-auto block h-10 w-10 animate-pulse rounded-full border-4 border-emergency-100 border-t-emergency-600" aria-hidden="true" />
+          <p className="mt-4 text-sm font-bold text-muted">Cargando pantalla segura...</p>
+        </div>
+      </div>
+    </AppShell>
   );
 }
 
@@ -180,7 +195,7 @@ function RoleAccessScreen() {
         className="mobile-static-screen relative isolate h-dvh overflow-hidden bg-white px-5 pb-5 pt-5 sm:px-7"
         style={{ backgroundImage: `url(${accessHeroBackground})`, backgroundPosition: "center bottom", backgroundRepeat: "no-repeat", backgroundSize: "100% auto" }}
       >
-        <div className="mobile-access-content relative mx-auto flex h-full max-w-sm flex-col">
+        <div className="mobile-access-content relative mx-auto flex h-full max-w-sm flex-col items-center">
           <header className="mobile-access-header pt-1 text-center">
             <div className="mx-auto w-fit"><BrandLogo large /></div>
             <h1 className="mt-4 text-[2.35rem] font-black leading-none tracking-[-0.045em] text-emergency-700">AlertaBombero</h1>
@@ -188,7 +203,7 @@ function RoleAccessScreen() {
             <div className="mx-auto mt-7 flex w-28 items-center justify-center gap-2" aria-hidden="true"><span className="h-0.5 w-9 bg-emergency-600" /><span className="h-2.5 w-2.5 rounded-full bg-emergency-600" /><span className="h-0.5 w-9 bg-emergency-600" /></div>
           </header>
 
-          <div className="mobile-access-choices mt-7 space-y-3">
+          <div className="mobile-access-choices mt-7 w-full space-y-3">
             <p className="text-center text-xl font-black tracking-[-0.02em] text-ink">Como deseas continuar?</p>
           <RoleCard
             href="/ciudadano/login"
@@ -205,12 +220,12 @@ function RoleAccessScreen() {
           />
           </div>
 
-          <div className="mobile-access-trust mt-5 grid grid-cols-2 gap-3">
+          <div className="mobile-access-trust mt-5 grid w-full grid-cols-2 gap-3">
             <TrustCard icon={<LockKeyhole className="h-6 w-6" />} title="Datos seguros" description="Tu informacion esta protegida y encriptada." />
             <TrustCard icon={<TimerReset className="h-6 w-6" />} title="Respuesta rapida" description="Conexion directa con bomberos y estaciones." />
           </div>
 
-          <footer className="mobile-access-footer mt-auto pt-5 text-center">
+          <footer className="mobile-access-footer mt-auto w-full pt-5 text-center">
             <div className="flex items-center gap-3" aria-hidden="true"><span className="h-px flex-1 bg-slate-300" /><span className="grid h-9 w-9 place-items-center rounded-full border-2 border-emergency-600 bg-white text-emergency-600"><ShieldCheck className="h-4 w-4" /></span><span className="h-px flex-1 bg-slate-300" /></div>
             <p className="mt-5 text-sm font-medium text-slate-500">Juntos protegemos vidas y nuestra comunidad.</p>
             <p className="mt-3 text-sm font-bold text-emergency-700">Ante una emergencia, actua con calma y seguridad.</p>

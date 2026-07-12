@@ -172,15 +172,6 @@ textarea:focus-visible {
   }
 }
 
-@media (max-height: 760px) {
-  .mobile-access-content {
-    transform: scale(0.86);
-    transform-origin: top center;
-    width: 116.28%;
-    margin-left: -8.14%;
-  }
-}
-
 @layer components {
   .btn-primary {
     @apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emergency-600 px-4 py-3 text-sm font-extrabold text-white shadow-soft transition duration-150 hover:bg-emergency-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60;
