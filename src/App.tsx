@@ -262,12 +262,19 @@ function CitizenLoginScreen() {
 
     try {
       const result = await authService().loginCitizen(form);
+      if (result.nextStep === "welcome") {
+        const sessionId = createActiveSessionId();
+        await authService().resumeVerifiedSession(result.profileId, sessionId);
+        saveActiveSessionId(sessionId);
+        navigate(result.welcomePath);
+        return;
+      }
       savePendingAuth({
-        expiresAt: result.otp.expiresAt,
+        expiresAt: result.otp!.expiresAt,
         profileId: result.profileId,
-        purpose: result.otp.purpose,
+        purpose: result.otp!.purpose,
         role: result.role,
-        userIdentifier: result.otp.userIdentifier,
+        userIdentifier: result.otp!.userIdentifier,
         welcomePath: result.welcomePath
       });
       navigate("/ciudadano/otp");
@@ -402,12 +409,19 @@ function FirefighterLoginScreen() {
 
     try {
       const result = await authService().loginFirefighter(form);
+      if (result.nextStep === "welcome") {
+        const sessionId = createActiveSessionId();
+        await authService().resumeVerifiedSession(result.profileId, sessionId);
+        saveActiveSessionId(sessionId);
+        navigate(result.welcomePath);
+        return;
+      }
       savePendingAuth({
-        expiresAt: result.otp.expiresAt,
+        expiresAt: result.otp!.expiresAt,
         profileId: result.profileId,
-        purpose: result.otp.purpose,
+        purpose: result.otp!.purpose,
         role: result.role,
-        userIdentifier: result.otp.userIdentifier,
+        userIdentifier: result.otp!.userIdentifier,
         welcomePath: result.welcomePath
       });
       navigate("/bombero/otp");

@@ -24,6 +24,7 @@ export function CitizenReportScreen() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState<ReportLocation | null>(null);
   const [evidence, setEvidence] = useState<File | null>(null);
+  const [evidencePreview, setEvidencePreview] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(5);
   const [error, setError] = useState("");
   const [locating, setLocating] = useState(false);
@@ -40,6 +41,17 @@ export function CitizenReportScreen() {
   useEffect(() => {
     locate();
   }, []);
+
+  useEffect(() => {
+    if (!evidence) {
+      setEvidencePreview(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(evidence);
+    setEvidencePreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [evidence]);
 
   useEffect(() => {
     if (step !== "countdown" || sending) return;
@@ -231,9 +243,12 @@ export function CitizenReportScreen() {
             </label>
           </div>
           {evidence ? (
-            <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-              <span className="min-w-0 truncate text-sm font-bold text-success">{evidence.name}</span>
-              <CheckCircle2 className="h-5 w-5 text-success" />
+            <div className="overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50">
+              {evidencePreview ? evidence.type.startsWith("video/") ? <video className="h-44 w-full bg-slate-950 object-cover" controls src={evidencePreview} /> : <img alt="Vista previa de la evidencia" className="h-44 w-full object-cover" src={evidencePreview} /> : null}
+              <div className="flex items-center justify-between gap-3 p-3">
+                <span className="min-w-0 truncate text-sm font-bold text-success">{evidence.name}</span>
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+              </div>
             </div>
           ) : null}
           <div className="sticky bottom-0 -mx-4 grid grid-cols-2 gap-3 bg-app/95 px-4 pb-2 pt-3 backdrop-blur">

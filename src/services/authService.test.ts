@@ -113,7 +113,7 @@ describe("authService", () => {
     expect(client.from).toHaveBeenCalledWith("profiles");
     expect(client.rpc).not.toHaveBeenCalledWith("link_firefighter_profile", expect.anything());
     expect(result.nextStep).toBe("otp");
-    expect(result.otp.purpose).toBe("firefighter_login");
+    expect(result.otp?.purpose).toBe("firefighter_login");
   });
 
   it("does not allow firefighter self-provisioning after a failed login", async () => {

@@ -26,13 +26,15 @@ type AuthClient = {
   rpc?(fn: string, args: Record<string, unknown>): QueryResult;
 };
 
-type AuthStartResult = {
-  nextStep: "otp";
+type AuthStartBase = {
   profileId: string;
   role: "citizen" | "firefighter";
-  otp: SimulatedOtpChallenge;
   welcomePath: string;
 };
+
+type OtpStartResult = AuthStartBase & { nextStep: "otp"; otp: SimulatedOtpChallenge };
+type SessionResumeResult = AuthStartBase & { nextStep: "welcome"; otp?: never };
+type AuthStartResult = OtpStartResult | SessionResumeResult;
 
 type AuthServiceOptions = {
   authMode?: AuthMode;
@@ -42,7 +44,7 @@ export function createAuthService(client: AuthClient, options: AuthServiceOption
   const authMode = options.authMode ?? "demo";
 
   return {
-    async registerCitizen(input: CitizenRegistrationInput): Promise<AuthStartResult> {
+    async registerCitizen(input: CitizenRegistrationInput): Promise<OtpStartResult> {
       ensureDemoAuthMode(authMode);
 
       const parsed = validateCitizenRegistration(input);
@@ -99,7 +101,7 @@ export function createAuthService(client: AuthClient, options: AuthServiceOption
 
       const { data: profile, error: profileError } = await client
         .from("profiles")
-        .select("id, role, phone, active")
+        .select("id, role, phone, active, phone_verified")
         .eq("phone", data.phone)
         .maybeSingle();
 
@@ -108,13 +110,11 @@ export function createAuthService(client: AuthClient, options: AuthServiceOption
         throw new Error("No encontramos una cuenta ciudadana activa.");
       }
 
-      return {
-        nextStep: "otp",
-        profileId: profile.id,
-        role: "citizen",
-        otp: createSimulatedOtpChallenge(otpPurposeForFlow("citizen-login"), data.phone),
-        welcomePath: "/ciudadano/bienvenida"
-      };
+      if (profile.phone_verified) {
+        return { nextStep: "welcome", profileId: profile.id, role: "citizen", welcomePath: "/ciudadano/bienvenida" };
+      }
+
+      return { nextStep: "otp", profileId: profile.id, role: "citizen", otp: createSimulatedOtpChallenge(otpPurposeForFlow("citizen-login"), data.phone), welcomePath: "/ciudadano/bienvenida" };
     },
 
     async loginFirefighter(input: FirefighterLoginInput): Promise<AuthStartResult> {
@@ -137,7 +137,7 @@ export function createAuthService(client: AuthClient, options: AuthServiceOption
 
       const { data: profile, error: profileError } = await client
         .from("profiles")
-        .select("id, role, firefighter_code, active")
+        .select("id, role, firefighter_code, active, phone_verified")
         .eq("firefighter_code", code)
         .maybeSingle();
 
@@ -146,13 +146,11 @@ export function createAuthService(client: AuthClient, options: AuthServiceOption
         throw new Error("No encontramos un bombero activo con ese codigo.");
       }
 
-      return {
-        nextStep: "otp",
-        profileId: profile.id,
-        role: "firefighter",
-        otp: createSimulatedOtpChallenge(otpPurposeForFlow("firefighter-login"), code),
-        welcomePath: "/bombero/bienvenida"
-      };
+      if (profile.phone_verified) {
+        return { nextStep: "welcome", profileId: profile.id, role: "firefighter", welcomePath: "/bombero/bienvenida" };
+      }
+
+      return { nextStep: "otp", profileId: profile.id, role: "firefighter", otp: createSimulatedOtpChallenge(otpPurposeForFlow("firefighter-login"), code), welcomePath: "/bombero/bienvenida" };
     },
 
     async markPhoneVerified(profileId: string, activeSessionId: string) {
@@ -163,6 +161,15 @@ export function createAuthService(client: AuthClient, options: AuthServiceOption
         target_active_session_id: activeSessionId
       });
 
+      if (error) throw error;
+    },
+
+    async resumeVerifiedSession(profileId: string, activeSessionId: string) {
+      ensureDemoAuthMode(authMode);
+      const { error } = await rpc(client, "resume_verified_demo_session", {
+        target_profile_id: profileId,
+        target_active_session_id: activeSessionId
+      });
       if (error) throw error;
     },
 
