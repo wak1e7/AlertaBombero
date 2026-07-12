@@ -54,6 +54,18 @@ textarea:focus-visible {
 }
 
 @media (max-height: 900px) {
+  .welcome-screen .h-28 {
+    height: 5rem;
+    width: 5rem;
+  }
+
+  .welcome-screen h1 {
+    font-size: 1.5rem;
+  }
+
+  .welcome-screen .mt-5 {
+    margin-top: 0.75rem;
+  }
   .mobile-access-header .h-28 {
     height: 5.25rem;
     width: 5.25rem;

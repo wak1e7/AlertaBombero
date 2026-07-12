@@ -3,12 +3,14 @@ import { useEffect, useState, type FormEvent } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import {
   Bell,
+  Camera,
   ChevronRight,
   ClipboardList,
   History,
   Home,
   LockKeyhole,
   MapPin,
+  Radio,
   ShieldCheck,
   TimerReset,
   UserRound,
@@ -605,21 +607,27 @@ function WelcomeScreen({ role }: { role: "citizen" | "firefighter" }) {
   const label = role === "firefighter" ? "Ir al panel" : "Ir al inicio";
 
   return (
-    <AppShell>
-      <div className="grid min-h-dvh place-items-center px-5">
-        <div className="text-center">
+    <AppShell compact>
+      <div className="welcome-screen relative grid h-dvh overflow-hidden px-5 py-5">
+        <div className="my-auto text-center">
           <div className="mx-auto w-fit"><BrandLogo large /></div>
-          <h1 className="mt-5 text-3xl font-black text-ink">
-            Bienvenido, {role === "firefighter" ? "bombero" : "ciudadano"}
+          <h1 className="mt-4 text-[1.9rem] font-black leading-tight text-ink">
+            {role === "firefighter" ? <>Bienvenido,<br /><span className="text-emergency-600">bombero</span></> : <>Bienvenido a<br /><span className="text-emergency-600">AlertaBombero</span></>}
           </h1>
-          <p className="mt-3 text-sm text-muted">Tu cuenta esta verificada para continuar.</p>
-          <Link className="btn-primary mt-8" to={href}>
-            {label}
-          </Link>
+          <p className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-success"><ShieldCheck className="h-4 w-4" /> Cuenta verificada</p>
+          <div className="mt-5 space-y-2 text-left">
+            <WelcomeFeature icon={role === "citizen" ? <MapPin /> : <UsersRound />} title={role === "citizen" ? "Ubicacion automatica" : "Compania asignada"} text={role === "citizen" ? "Detectamos tu ubicacion para enviar ayuda rapidamente." : "Accede a reportes asignados a tu compania."} />
+            <WelcomeFeature icon={role === "citizen" ? <Camera /> : <Radio />} title={role === "citizen" ? "Evidencia obligatoria" : "Estados operativos"} text={role === "citizen" ? "Adjunta fotos o videos para que te puedan atender." : "Actualiza el estado de cada emergencia en tiempo real."} />
+          </div>
+          <Link className="btn-primary mt-5" to={href}>{label}<ChevronRight className="h-4 w-4" /></Link>
         </div>
       </div>
     </AppShell>
   );
+}
+
+function WelcomeFeature({ icon, text, title }: { icon: React.ReactNode; text: string; title: string }) {
+  return <article className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-soft"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-emergency-50 text-emergency-600 [&>svg]:h-4 [&>svg]:w-4">{icon}</span><span><strong className="block text-xs text-ink">{title}</strong><span className="mt-0.5 block text-[10px] leading-relaxed text-muted">{text}</span></span></article>;
 }
 
 function TextInput({
@@ -679,24 +687,25 @@ function CitizenHome() {
 
   return (
     <AppShell navItems={citizenNavItems}>
+      <div className="mobile-home flex min-h-[calc(100dvh-7rem)] flex-col">
       <DashboardHeader eyebrow="Bienvenido" title="Juan Perez" />
-      <section className="app-card mt-5 p-4">
+      <section className="app-card mt-4 p-3.5">
         <div className="flex items-center gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><MapPin className="h-5 w-5" /></span>
           <div>
             <p className="text-xs font-bold text-muted">Ubicacion actual</p>
-            <p className="mt-0.5 text-sm font-extrabold text-ink">San Miguel, Lima</p>
+            <p className="mt-0.5 text-sm font-extrabold text-ink">Chiclayo, Lambayeque</p>
           </div>
         </div>
       </section>
-      <section className="mt-10 text-center">
+      <section className="my-auto pb-2 pt-6 text-center">
         <p className="text-lg font-black text-ink">Necesitas ayuda de emergencia?</p>
         <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-muted">Inicia un reporte rapido y agrega la informacion necesaria.</p>
         <div className="mt-7 flex justify-center">
           <EmergencyButton onClick={() => navigate("/ciudadano/reporte")} />
         </div>
         <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-success"><ShieldCheck className="h-3.5 w-3.5" /> Listo para reportar</p>
-      </section>
+      </section></div>
     </AppShell>
   );
 }
@@ -704,8 +713,9 @@ function CitizenHome() {
 export function FirefighterHome() {
   return (
     <AppShell navItems={firefighterNavItems}>
+      <div className="mobile-home flex min-h-[calc(100dvh-7rem)] flex-col">
       <DashboardHeader eyebrow="Bienvenido" title="Carlos Ramirez" />
-      <section className="app-card mt-5 p-4">
+      <section className="app-card mt-4 p-3.5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-muted">Compania asignada</p>
@@ -714,14 +724,14 @@ export function FirefighterHome() {
           <StatusBadge status="RECIBIDO" />
         </div>
       </section>
-      <section className="mt-9 text-center">
+      <section className="my-auto pb-2 pt-6 text-center">
         <p className="text-lg font-black text-ink">Necesitas reportar una emergencia?</p>
         <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-muted">Registra una alerta operativa desde tu ubicacion actual.</p>
         <div className="mt-7 flex justify-center">
           <EmergencyButton />
         </div>
         <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-success"><ShieldCheck className="h-3.5 w-3.5" /> Listo para reportar</p>
-      </section>
+      </section></div>
     </AppShell>
   );
 }
