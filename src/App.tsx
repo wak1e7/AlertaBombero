@@ -595,25 +595,30 @@ function ProtectedRoute({
     let alive = true;
 
     async function checkSession() {
-      const client = getSupabaseClient();
-      const { data } = await client.auth.getSession();
-      const authUserId = data.session?.user.id;
-      const activeSessionId = getActiveSessionId();
+      try {
+        const client = getSupabaseClient();
+        const { data } = await client.auth.getSession();
+        const authUserId = data.session?.user.id;
+        const activeSessionId = getActiveSessionId();
 
-      if (!authUserId || !activeSessionId) {
-        if (alive) setState("denied");
-        return;
-      }
+        if (!authUserId || !activeSessionId) {
+          if (alive) setState("denied");
+          return;
+        }
 
-      const { data: profile } = await client
-        .from("profiles")
-        .select("role, active_session_id, phone_verified")
-        .eq("auth_user_id", authUserId)
-        .maybeSingle();
+        const { data: profile } = await client
+          .from("profiles")
+          .select("role, active_session_id, phone_verified")
+          .eq("auth_user_id", authUserId)
+          .maybeSingle();
 
-      if (profile?.role === role && profile.phone_verified && profile.active_session_id === activeSessionId) {
-        if (alive) setState("allowed");
-      } else {
+        if (profile?.role === role && profile.phone_verified && profile.active_session_id === activeSessionId) {
+          if (alive) setState("allowed");
+        } else {
+          clearActiveSessionId();
+          if (alive) setState("denied");
+        }
+      } catch {
         clearActiveSessionId();
         if (alive) setState("denied");
       }
@@ -776,6 +781,7 @@ function CitizenLocationCard() {
 }
 
 export function FirefighterHome() {
+  const navigate = useNavigate();
   const profileName = useProfileName();
 
   return (
@@ -795,7 +801,7 @@ export function FirefighterHome() {
         <p className="text-lg font-black text-ink">Necesitas reportar una emergencia?</p>
         <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-muted">Registra una alerta operativa desde tu ubicacion actual.</p>
         <div className="mt-7 flex justify-center">
-          <EmergencyButton />
+          <EmergencyButton onClick={() => navigate("/bombero/reportes")} />
         </div>
         <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-success"><ShieldCheck className="h-3.5 w-3.5" /> Listo para reportar</p>
       </section></div>
@@ -810,22 +816,26 @@ function useProfileName() {
     let active = true;
 
     async function loadProfileName() {
-      const { data: sessionData } = await getSupabaseClient().auth.getSession();
-      const authUserId = sessionData.session?.user.id;
-      if (!authUserId) {
+      try {
+        const { data: sessionData } = await getSupabaseClient().auth.getSession();
+        const authUserId = sessionData.session?.user.id;
+        if (!authUserId) {
+          if (active) setProfileName("Usuario");
+          return;
+        }
+
+        const { data } = await getSupabaseClient()
+          .from("profiles")
+          .select("name,last_name")
+          .eq("auth_user_id", authUserId)
+          .maybeSingle();
+
+        if (active) {
+          const name = [data?.name, data?.last_name].filter(Boolean).join(" ");
+          setProfileName(name || "Usuario");
+        }
+      } catch {
         if (active) setProfileName("Usuario");
-        return;
-      }
-
-      const { data } = await getSupabaseClient()
-        .from("profiles")
-        .select("name,last_name")
-        .eq("auth_user_id", authUserId)
-        .maybeSingle();
-
-      if (active) {
-        const name = [data?.name, data?.last_name].filter(Boolean).join(" ");
-        setProfileName(name || "Usuario");
       }
     }
 

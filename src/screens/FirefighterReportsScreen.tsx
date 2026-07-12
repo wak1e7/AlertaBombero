@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, ChevronDown, ChevronRight, Navigation, RefreshCw } from "lucide-react";
+import { ChevronRight, Navigation, RefreshCw } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { BrandLogo } from "../components/BrandLogo";
 import { InAppNotificationBanner } from "../components/InAppNotificationBanner";
@@ -78,15 +78,13 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
   return (
     <AppShell navItems={navItems}>
       <header className="screen-header pt-5">
-        <div className="flex items-center justify-between"><BrandLogo withName /><span className="relative grid h-9 w-9 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><Bell className="h-4 w-4" /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emergency-600" /></span></div>
+        <BrandLogo withName />
         <div className="mt-6 flex items-end justify-between">
           <div><p className="section-kicker">Operaciones</p><h1 className="page-heading mt-1">Reportes</h1></div>
           <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-success"><span className="h-1.5 w-1.5 rounded-full bg-success" /> En linea</span>
         </div>
       </header>
-      <button className="app-card mt-4 flex w-full items-center justify-between p-3 text-left" type="button">
-        <span><span className="block text-[10px] font-bold uppercase tracking-wide text-muted">Compania activa</span><span className="mt-0.5 block text-sm font-black text-ink">Cobertura Lambayeque</span></span><ChevronDown className="h-4 w-4 text-emergency-600" />
-      </button>
+      <section className="app-card mt-4 p-3"><span className="block text-[10px] font-bold uppercase tracking-wide text-muted">Compania activa</span><span className="mt-0.5 block text-sm font-black text-ink">Cobertura Lambayeque</span></section>
       <div className="mt-4 grid grid-cols-3 rounded-lg bg-slate-100 p-1">
         <FilterButton active={filter === "all"} count={reports.length} label="Todos" onClick={() => setFilter("all")} />
         <FilterButton active={filter === "new"} count={reports.filter((report) => report.status === "ENVIADO").length} label="Nuevos" onClick={() => setFilter("new")} />
