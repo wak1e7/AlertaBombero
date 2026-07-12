@@ -56,21 +56,18 @@ export function AppShell({
 
 function OfflineEmergencyScreen({ onRetry }: { onRetry: () => void }) {
   return (
-    <section className="grid min-h-dvh place-items-center px-5 py-8 text-center">
-      <div>
-        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emergency-50 text-emergency-600">
-          <WifiOff className="h-8 w-8" aria-hidden="true" />
+    <section className="grid h-dvh place-items-center overflow-hidden px-5 py-6 text-center">
+      <div className="w-full max-w-sm">
+        <span className="mx-auto grid h-20 w-20 place-items-center rounded-full border-4 border-emergency-100 bg-white text-emergency-600 shadow-soft">
+          <WifiOff className="h-10 w-10" aria-hidden="true" />
         </span>
-        <p className="section-kicker mt-5">Modo sin conexion</p>
-        <h1 className="mt-1 text-2xl font-black text-ink">Sin conexion</h1>
-        <p className="mt-1 text-sm font-bold text-ink">a internet</p>
-        <p className="mx-auto mt-2 max-w-xs text-sm font-medium leading-relaxed text-muted">
+        <p className="mt-5 inline-flex rounded-full bg-amber-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-amber-700">Modo sin conexion</p>
+        <h1 className="mt-4 text-2xl font-black text-emergency-700">Sin conexion</h1><p className="mt-1 text-sm font-bold text-ink">a internet</p>
+        <p className="mx-auto mt-3 max-w-xs text-sm font-medium leading-relaxed text-muted">
           Los reportes, estados y ubicacion en vivo se actualizaran cuando vuelva internet.
         </p>
-        <a className="btn-primary mt-8 inline-flex items-center gap-2" href="tel:116">
-          <PhoneCall className="h-5 w-5" aria-hidden="true" />
-          Llamar 116
-        </a>
+        <div className="mt-8 rounded-lg border border-amber-200 bg-amber-50 p-4 text-left"><p className="text-xs font-black text-amber-900">Si es una emergencia activa, no esperes la conexion.</p><p className="mt-1 text-xs font-medium text-amber-800">Coordina por radio o llama directamente al 116.</p></div>
+        <a className="btn-primary mt-5 inline-flex items-center gap-2" href="tel:116"><PhoneCall className="h-5 w-5" aria-hidden="true" /> Llamar 116</a>
         <button className="btn-secondary mt-3" onClick={onRetry} type="button">
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
           Reintentar
