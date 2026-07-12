@@ -70,10 +70,10 @@ export function FirefighterHistoryScreen({ navItems }: { navItems: Parameters<ty
         </p>
       ) : null}
 
-      <section className="mt-5 space-y-3">
+      <section className="mt-4 space-y-2.5">
         {reports.map((report) => (
           <Link
-            className="app-card flex items-center gap-3 p-3.5 transition hover:border-emergency-200"
+            className="app-card flex min-h-28 items-center gap-3 p-3.5 transition hover:border-emergency-200"
             key={report.id}
             to={`/bombero/reportes/${report.id}?from=historial`}
           >

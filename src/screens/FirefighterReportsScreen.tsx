@@ -84,8 +84,8 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
           <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-success"><span className="h-1.5 w-1.5 rounded-full bg-success" /> En linea</span>
         </div>
       </header>
-      <button className="app-card mt-5 flex w-full items-center justify-between p-3 text-left" type="button">
-        <span><span className="block text-[10px] font-bold uppercase tracking-wide text-muted">Cobertura operativa</span><span className="mt-0.5 block text-sm font-black text-ink">Cuerpo de Bomberos - Chiclayo</span></span><ChevronDown className="h-4 w-4 text-emergency-600" />
+      <button className="app-card mt-4 flex w-full items-center justify-between p-3 text-left" type="button">
+        <span><span className="block text-[10px] font-bold uppercase tracking-wide text-muted">Compania activa</span><span className="mt-0.5 block text-sm font-black text-ink">Cobertura Lambayeque</span></span><ChevronDown className="h-4 w-4 text-emergency-600" />
       </button>
       <div className="mt-4 grid grid-cols-3 rounded-lg bg-slate-100 p-1">
         <FilterButton active={filter === "all"} count={reports.length} label="Todos" onClick={() => setFilter("all")} />
@@ -94,7 +94,7 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
       </div>
       <button
           aria-label="Actualizar reportes"
-          className="sr-only"
+          className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-emergency-700 shadow-soft"
           onClick={loadReports}
           type="button"
         >
@@ -110,10 +110,10 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
         </p>
       ) : null}
 
-      <section className="mt-5 space-y-3">
+      <section className="mt-4 space-y-2.5">
         {visibleReports.map((report) => (
           <Link
-            className="app-card flex items-center gap-3 p-3.5 transition hover:border-emergency-200"
+            className="app-card flex min-h-28 items-center gap-3 p-3.5 transition hover:border-emergency-200"
             key={report.id}
             to={`/bombero/reportes/${report.id}`}
           >
@@ -136,7 +136,7 @@ export function FirefighterReportsScreen({ navItems }: { navItems: Parameters<ty
 }
 
 function FilterButton({ active, count, label, onClick }: { active: boolean; count: number; label: string; onClick: () => void }) {
-  return <button className={`min-h-9 rounded-md px-1 text-[11px] font-bold transition ${active ? "bg-white text-emergency-700 shadow-sm" : "text-muted"}`} onClick={onClick} type="button">{label} <span className="ml-0.5">{count}</span></button>;
+  return <button className={`min-h-9 rounded-md px-1 text-[11px] font-bold transition ${active ? "bg-emergency-600 text-white shadow-sm" : "text-muted"}`} onClick={onClick} type="button">{label} <span className="ml-0.5">{count}</span></button>;
 }
 
 function DistanceLabel({ currentLocation, reportLocation }: { currentLocation: Coordinate | null; reportLocation: Coordinate }) {
