@@ -4,10 +4,13 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate } from "react
 import {
   ChevronRight,
   ClipboardList,
+  Eye,
+  EyeOff,
   History,
   Home,
   LockKeyhole,
   MapPin,
+  Phone,
   RefreshCw,
   ShieldCheck,
   UserRound
@@ -329,9 +332,16 @@ function CitizenLoginScreen() {
 
   return (
     <AppShell compact>
-      <AuthCard title="Iniciar sesion" subtitle="Accede a tu cuenta ciudadana" backTo="/">
+      <AuthCard
+        backTo="/"
+        footer={<CitizenLoginFooter />}
+        scrollable
+        title="Iniciar sesión"
+        subtitle="Accede a tu cuenta para continuar"
+      >
         <form className="space-y-4" noValidate onSubmit={onSubmit}>
           <TextInput
+            icon={<Phone className="h-5 w-5" />}
             label="Telefono"
             value={form.phone}
             onChange={(phone) => setForm((current) => ({ ...current, phone }))}
@@ -340,6 +350,7 @@ function CitizenLoginScreen() {
             placeholder="+51 999 999 999"
           />
           <TextInput
+            icon={<LockKeyhole className="h-5 w-5" />}
             label="Contrasena"
             type="password"
             autoComplete="current-password"
@@ -349,14 +360,10 @@ function CitizenLoginScreen() {
           />
           <FormError message={error} />
           <button className="btn-primary" disabled={loading} type="submit">
-            {loading ? "Ingresando..." : "Ingresar"}
+            {loading ? "Ingresando..." : <>Ingresar <ChevronRight className="h-5 w-5" /></>}
           </button>
-          <p className="text-center text-xs text-muted">
-            No tienes cuenta?{" "}
-            <Link className="font-bold text-emergency-600" to="/ciudadano/registro">
-              Crear cuenta
-            </Link>
-          </p>
+          <AuthRoleDivider icon={<AiIcon name="citizens" className="h-7 w-7" />} label="Acceso ciudadano" />
+          <p className="text-center text-sm text-muted">No tienes cuenta? <Link className="font-bold text-emergency-600" to="/ciudadano/registro">Crear cuenta</Link></p>
         </form>
       </AuthCard>
     </AppShell>
@@ -478,9 +485,17 @@ function FirefighterLoginScreen() {
 
   return (
     <AppShell compact>
-      <AuthCard title="Acceso bombero" subtitle="Ingresa tus datos para continuar" backTo="/">
+      <AuthCard
+        backTo="/"
+        footer={<FirefighterLoginFooter />}
+        headingIcon={<AiIcon name="firefighter" className="h-14 w-14" />}
+        scrollable
+        title={<>Acceso <span className="text-emergency-600">bombero</span></>}
+        subtitle="Ingresa tus datos para continuar"
+      >
         <form className="space-y-4" noValidate onSubmit={onSubmit}>
           <TextInput
+            icon={<AiIcon name="firefighter" className="h-6 w-6" />}
             label="Codigo de bombero"
             autoComplete="username"
             maxLength={6}
@@ -489,6 +504,7 @@ function FirefighterLoginScreen() {
             placeholder="A24982"
           />
           <TextInput
+            icon={<LockKeyhole className="h-5 w-5" />}
             label="Contrasena"
             type="password"
             autoComplete="current-password"
@@ -497,8 +513,11 @@ function FirefighterLoginScreen() {
           />
           <FormError message={error} />
           <button className="btn-primary" disabled={loading} type="submit">
-            {loading ? "Validando..." : "Ingresar"}
+            {loading ? "Validando..." : <><AiIcon name="secure" className="h-6 w-6" /> Ingresar</>}
           </button>
+          <section className="rounded-lg border border-emergency-200 bg-emergency-50/60 p-3.5 text-left">
+            <div className="flex items-start gap-3"><AiIcon name="secure" className="h-10 w-10 shrink-0" /><div><p className="text-sm font-black text-emergency-700">Solo personal registrado</p><p className="mt-1 text-xs leading-relaxed text-muted">Este acceso es exclusivo para bomberos autorizados. Todas las acciones son registradas.</p></div></div>
+          </section>
         </form>
       </AuthCard>
     </AppShell>
@@ -677,6 +696,7 @@ function WelcomeFeature({ icon, text, title }: { icon: React.ReactNode; text: st
 
 function TextInput({
   autoComplete,
+  icon,
   inputMode,
   label,
   maxLength,
@@ -686,6 +706,7 @@ function TextInput({
   value
 }: {
   autoComplete?: string;
+  icon?: React.ReactNode;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   label: string;
   maxLength?: number;
@@ -694,22 +715,45 @@ function TextInput({
   type?: string;
   value: string;
 }) {
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const isPassword = type === "password";
+
   return (
     <label className="field-label text-left">
       {label}
-      <input
-        className="field-control"
-        autoComplete={autoComplete}
-        inputMode={inputMode}
-        maxLength={maxLength}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        required
-        type={type}
-        value={value}
-      />
+      <span className="relative mt-2 block">
+        {icon ? <span className="pointer-events-none absolute inset-y-0 left-3.5 grid place-items-center text-emergency-600">{icon}</span> : null}
+        <input
+          className={`field-control mt-0 ${icon ? "pl-11" : ""} ${isPassword ? "pr-12" : ""}`}
+          autoComplete={autoComplete}
+          inputMode={inputMode}
+          maxLength={maxLength}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          required
+          type={isPassword && passwordVisible ? "text" : type}
+          value={value}
+        />
+        {isPassword ? <button aria-label={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"} className="absolute inset-y-0 right-3 grid w-9 place-items-center text-slate-500 hover:text-emergency-600" onClick={(event) => { event.preventDefault(); setPasswordVisible((current) => !current); }} type="button">{passwordVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button> : null}
+      </span>
     </label>
   );
+}
+
+function AuthRoleDivider({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return <div className="pt-1 text-center"><div className="flex items-center gap-3"><span className="h-px flex-1 bg-slate-200" /><span className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white">{icon}</span><span className="h-px flex-1 bg-slate-200" /></div><p className="mt-2 text-sm font-medium text-muted">{label}</p></div>;
+}
+
+function CitizenLoginFooter() {
+  return <><section className="grid grid-cols-2 gap-3"><AuthInfoCard icon={<AiIcon name="secure" className="h-10 w-10" />} title="Datos seguros" text="Encriptación de extremo a extremo para proteger tu información." /><AuthInfoCard icon={<AiIcon name="rapid" className="h-10 w-10" />} title="Respuesta rápida" text="Conexión directa con estaciones para una atención oportuna." /></section><div className="mt-6 flex items-start justify-center gap-3 px-3 text-left"><AiIcon name="secure" className="h-8 w-8 shrink-0" /><p className="text-xs leading-relaxed text-muted">Tu seguridad es nuestra prioridad.<br />Usa la app solo en caso de emergencia real.</p></div></>;
+}
+
+function FirefighterLoginFooter() {
+  return <><AuthRoleDivider icon={<AiIcon name="rescue" className="h-7 w-7" />} label="Acceso por compañía" /><div className="mt-4 flex items-center gap-3 rounded-lg bg-white/80 p-3"><AiIcon name="rescue" className="h-10 w-10 shrink-0" /><p className="text-xs leading-relaxed text-muted">Asegúrate de pertenecer a una compañía activa antes de continuar.</p></div></>;
+}
+
+function AuthInfoCard({ icon, text, title }: { icon: React.ReactNode; text: string; title: string }) {
+  return <article className="min-h-44 rounded-[1.15rem] border border-slate-200 bg-white/90 p-4 text-center shadow-soft"><span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emergency-50">{icon}</span><h2 className="mt-3 text-sm font-black text-ink">{title}</h2><p className="mt-2 text-xs leading-relaxed text-muted">{text}</p></article>;
 }
 
 function FormError({ message }: { message: string }) {

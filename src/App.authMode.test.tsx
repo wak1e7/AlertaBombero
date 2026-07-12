@@ -14,7 +14,7 @@ describe("App auth mode", () => {
     window.history.pushState({}, "", "/ciudadano/login");
     render(<App />);
 
-    expect(screen.getByRole("heading", { name: "Iniciar sesion" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Iniciar sesión" })).toBeInTheDocument();
     expect(screen.queryByText(/Demo:/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/OTP:/i)).not.toBeInTheDocument();
   });

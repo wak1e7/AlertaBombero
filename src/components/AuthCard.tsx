@@ -8,12 +8,16 @@ export function AuthCard({
   title,
   subtitle,
   children,
+  footer,
+  headingIcon,
   backTo = "/",
   scrollable = false
 }: {
-  title: string;
+  title: React.ReactNode;
   subtitle: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
+  headingIcon?: React.ReactNode;
   backTo?: string;
   scrollable?: boolean;
 }) {
@@ -27,10 +31,12 @@ export function AuthCard({
           <BrandLogo large withName />
         </header>
         <div className={`${scrollable ? "mt-9" : "my-auto"} rounded-[1.35rem] border border-slate-200/90 bg-white/95 p-5 shadow-[0_14px_34px_rgba(31,38,51,0.1)] backdrop-blur-sm sm:p-6`}>
+          {headingIcon ? <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-emergency-50">{headingIcon}</div> : null}
           <h1 className="text-center text-xl font-black text-ink">{title}</h1>
           <p className="mt-1 text-center text-sm font-medium text-muted">{subtitle}</p>
           <div className="mt-6">{children}</div>
         </div>
+        {footer ? <div className="mt-5 pb-6">{footer}</div> : null}
       </div>
     </section>
   );
