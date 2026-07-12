@@ -53,7 +53,7 @@ textarea:focus-visible {
   color: #b81815;
 }
 
-@media (max-height: 900px) {
+@media (max-height: 960px) {
   .welcome-screen .h-28 {
     height: 5rem;
     width: 5rem;
@@ -66,13 +66,18 @@ textarea:focus-visible {
   .welcome-screen .mt-5 {
     margin-top: 0.75rem;
   }
+  .mobile-static-screen {
+    padding-bottom: 0.75rem;
+    padding-top: 0.75rem;
+  }
+
   .mobile-access-header .h-28 {
-    height: 5.25rem;
-    width: 5.25rem;
+    height: 4.75rem;
+    width: 4.75rem;
   }
 
   .mobile-access-header h1 {
-    font-size: 2rem;
+    font-size: 1.9rem;
   }
 
   .mobile-access-header > p {
@@ -80,26 +85,26 @@ textarea:focus-visible {
   }
 
   .mobile-access-header > div:last-child {
-    margin-top: 1rem;
+    margin-top: 0.75rem;
   }
 
   .mobile-access-choices {
-    margin-top: 1.25rem;
+    margin-top: 0.75rem;
   }
 
   .mobile-access-choices > a {
-    min-height: 6.25rem;
-    border-radius: 1rem;
-    padding: 0.875rem;
+    min-height: 5.75rem;
+    border-radius: 0.9rem;
+    padding: 0.75rem;
   }
 
   .mobile-access-choices > a > span:first-child {
-    height: 3.5rem;
-    width: 3.5rem;
+    height: 3.25rem;
+    width: 3.25rem;
   }
 
   .mobile-access-choices > a > span:nth-child(2) > span:first-child {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   .mobile-access-choices > a > span:nth-child(2) > span:last-child {
@@ -108,17 +113,17 @@ textarea:focus-visible {
   }
 
   .mobile-access-trust {
-    margin-top: 0.75rem;
+    margin-top: 0.5rem;
   }
 
   .mobile-access-trust article {
-    min-height: 5.75rem;
-    padding: 0.75rem;
+    min-height: 4.75rem;
+    padding: 0.6rem;
   }
 
   .mobile-access-trust article > span {
-    height: 2.25rem;
-    width: 2.25rem;
+    height: 2rem;
+    width: 2rem;
   }
 
   .mobile-access-trust article svg {
@@ -136,12 +141,12 @@ textarea:focus-visible {
   }
 
   .mobile-access-footer {
-    padding-top: 0.75rem;
+    padding-top: 0.5rem;
   }
 
   .mobile-access-footer p {
-    margin-top: 0.5rem;
-    font-size: 0.7rem;
+    margin-top: 0.35rem;
+    font-size: 0.65rem;
   }
 
   .report-step .leaflet-container {
@@ -151,6 +156,25 @@ textarea:focus-visible {
   .report-step textarea {
     min-height: 5rem;
   }
+}
+
+@media (max-height: 760px) {
+  .auth-brand .h-28 { height: 3.75rem; width: 3.75rem; }
+  .auth-brand .text-\[2rem\] { font-size: 1.45rem; }
+  .auth-brand .text-xs { font-size: 0.65rem; }
+  .mobile-access-header .h-28 { height: 4rem; width: 4rem; }
+  .mobile-access-header h1 { margin-top: 0.5rem; font-size: 1.65rem; }
+  .mobile-access-header > p { margin-top: 0.4rem; font-size: 0.75rem; }
+  .mobile-access-header > div:last-child { margin-top: 0.5rem; transform: scale(0.8); }
+  .mobile-access-choices > p { font-size: 1rem; }
+  .mobile-access-choices > a { min-height: 4.85rem; padding: 0.6rem; }
+  .mobile-access-choices > a > span:first-child { height: 2.75rem; width: 2.75rem; }
+  .mobile-access-choices > a > span:nth-child(2) > span:first-child { font-size: 0.95rem; }
+  .mobile-access-choices > a > span:nth-child(2) > span:last-child { display: none; }
+  .mobile-access-trust article { min-height: 3.85rem; padding: 0.5rem; }
+  .mobile-access-trust h2 { margin-top: 0.25rem; font-size: 0.62rem; }
+  .mobile-access-footer p { display: none; }
+  .mobile-access-footer > div { transform: scale(0.8); }
 }
 
 @layer components {

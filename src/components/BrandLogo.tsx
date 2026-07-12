@@ -10,10 +10,10 @@ export function BrandLogo({ large = false, withName = false }: { large?: boolean
       </span>
       {withName ? (
         <span className="leading-none">
-          <span className="block text-base font-black tracking-[-0.02em] text-ink">
+          <span className={`block font-black tracking-[-0.02em] text-ink ${large ? "text-[2rem]" : "text-base"}`}>
             Alerta<span className="text-emergency-600">Bombero</span>
           </span>
-          <span className="mt-1 block text-[9px] font-medium text-muted">Reportar emergencias en tiempo real</span>
+          <span className={`mt-1 block font-medium text-muted ${large ? "text-xs" : "text-[9px]"}`}>Reportar emergencias en tiempo real</span>
         </span>
       ) : null}
     </div>

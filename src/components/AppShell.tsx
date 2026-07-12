@@ -23,12 +23,12 @@ export function AppShell({
   return (
     <main className="min-h-dvh bg-slate-100 text-ink">
       <div className="mx-auto min-h-dvh w-full max-w-md bg-app shadow-[0_0_0_1px_rgba(15,23,42,0.05)]">
-        <div className={compact ? "" : "px-4 pb-28 sm:px-5"}>
+        <div className={compact ? "" : "px-4 pb-[calc(4.75rem+env(safe-area-inset-bottom))] sm:px-5"}>
           {online ? children : <OfflineEmergencyScreen onRetry={retry} />}
         </div>
         {navItems.length > 0 ? (
           <nav aria-label="Navegacion principal" className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200/80 bg-white/95 shadow-[0_-8px_20px_rgba(31,38,51,0.06)] backdrop-blur">
-            <div className="mx-auto grid max-w-md grid-cols-3 gap-1 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
+            <div className="mx-auto grid h-[4.5rem] max-w-md grid-cols-3 gap-1 px-4 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1.5">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -36,7 +36,7 @@ export function AppShell({
                     key={item.href}
                     to={item.href}
                     className={({ isActive }) =>
-                      `grid min-h-14 place-items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-bold transition ${
+                        `grid h-14 place-items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition ${
                         isActive ? "bg-emergency-50 text-emergency-700" : "text-muted hover:bg-slate-50"
                       }`
                     }
