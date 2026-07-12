@@ -222,8 +222,8 @@ function RoleAccessScreen() {
           </div>
 
           <div className="mobile-access-trust mt-5 grid w-full grid-cols-2 gap-3">
-            <TrustCard icon={<AiIcon name="secure" className="h-9 w-9" />} title="Datos seguros" description="Tu informacion esta protegida y encriptada." />
-            <TrustCard icon={<AiIcon name="rapid" className="h-9 w-9" />} title="Respuesta rapida" description="Conexion directa con bomberos y estaciones." />
+            <TrustCard icon={<AiIcon name="secure" className="h-9 w-9" />} title="Datos seguros" description="Tu información está protegida y encriptada." />
+            <TrustCard icon={<AiIcon name="rapid" className="h-9 w-9" />} title="Respuesta rápida" description="Conexión directa con bomberos y estaciones." />
           </div>
 
           <footer className="mobile-access-footer mt-auto w-full pt-5 text-center">
@@ -279,9 +279,9 @@ function RoleCard({
 
 function TrustCard({ description, icon, title }: { description: string; icon: React.ReactNode; title: string }) {
   return (
-    <article className="flex min-h-[5.75rem] items-center gap-2.5 rounded-[1.15rem] border border-slate-200/80 bg-white/90 p-3 shadow-[0_5px_16px_rgba(31,38,51,0.04)]">
+    <article className="flex min-h-[6.25rem] items-center gap-2.5 rounded-[1.15rem] border border-slate-200/80 bg-white/90 p-3 shadow-[0_5px_16px_rgba(31,38,51,0.04)]">
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emergency-50 text-emergency-600">{icon}</span>
-      <div className="min-w-0"><h2 className="text-[11px] font-black leading-tight tracking-[-0.02em] text-ink">{title}</h2><p className="mt-1 text-[9px] leading-snug text-slate-500">{description}</p></div>
+      <div className="min-w-0"><h2 className="text-xs font-black leading-tight tracking-[-0.02em] text-ink">{title}</h2><p className="mt-1 text-[10px] leading-snug text-slate-500">{description}</p></div>
     </article>
   );
 }
