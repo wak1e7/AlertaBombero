@@ -143,6 +143,14 @@ textarea:focus-visible {
     margin-top: 0.5rem;
     font-size: 0.7rem;
   }
+
+  .report-step .leaflet-container {
+    height: 9rem !important;
+  }
+
+  .report-step textarea {
+    min-height: 5rem;
+  }
 }
 
 @layer components {
