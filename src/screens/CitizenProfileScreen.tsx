@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Phone, Settings2, ShieldCheck, UserRound } from "lucide-react";
+import { LogOut, Phone, Settings2, ShieldCheck } from "lucide-react";
+import { AiIcon } from "../components/AiIcon";
 import { AppShell } from "../components/AppShell";
 import { getSupabaseClient } from "../lib/supabase";
 import { createAuthService } from "../services/authService";
@@ -66,7 +67,7 @@ export function CitizenProfileScreen({ navItems }: { navItems: Parameters<typeof
       {loading ? <p className="mt-6 text-sm font-semibold text-muted" role="status">Cargando perfil...</p> : null}
       {profile ? (
         <section className="mt-5 space-y-3">
-          <div className="app-card p-4"><div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-full bg-emergency-50 text-emergency-600"><UserRound className="h-6 w-6" /></span><div><p className="text-base font-black text-ink">{profile.name} {profile.last_name}</p><p className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-success"><ShieldCheck className="h-3 w-3" /> Ciudadano verificado</p></div></div><div className="mt-4 border-t border-slate-100 pt-3"><ProfileRow icon={<Phone className="h-4 w-4" />} label="Telefono" value={profile.phone} /><ProfileRow icon={<ShieldCheck className="h-4 w-4" />} label="DNI" value={profile.dni} /></div></div>
+          <div className="app-card p-4"><div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-full bg-emergency-50"><AiIcon name="citizens" className="h-10 w-10" /></span><div><p className="text-base font-black text-ink">{profile.name} {profile.last_name}</p><p className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-success"><ShieldCheck className="h-3 w-3" /> Ciudadano verificado</p></div></div><div className="mt-4 border-t border-slate-100 pt-3"><ProfileRow icon={<Phone className="h-4 w-4" />} label="Telefono" value={profile.phone} /><ProfileRow icon={<ShieldCheck className="h-4 w-4" />} label="DNI" value={profile.dni} /></div></div>
           <Link className="app-card flex min-h-16 items-center justify-between p-3.5" to="/ciudadano/configuracion"><span className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><Settings2 className="h-5 w-5" /></span><span><strong className="block text-sm text-ink">Configuracion y accesibilidad</strong><span className="mt-0.5 block text-[11px] text-muted">Lectura, contraste y movimiento</span></span></span><span className="text-emergency-600">›</span></Link>
           <button className="btn-secondary" onClick={signOut} type="button"><LogOut className="h-4 w-4" /> Cerrar sesion</button>
         </section>

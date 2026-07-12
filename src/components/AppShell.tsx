@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type React from "react";
 import { NavLink } from "react-router-dom";
-import { PhoneCall, RefreshCw, WifiOff, type LucideIcon } from "lucide-react";
+import { PhoneCall, RefreshCw, type LucideIcon } from "lucide-react";
+import { AiIcon } from "./AiIcon";
 
 type NavItem = {
   href: string;
@@ -59,7 +60,7 @@ function OfflineEmergencyScreen({ onRetry }: { onRetry: () => void }) {
     <section className="grid h-dvh place-items-center overflow-hidden px-5 py-6 text-center">
       <div className="w-full max-w-sm">
         <span className="mx-auto grid h-20 w-20 place-items-center rounded-full border-4 border-emergency-100 bg-white text-emergency-600 shadow-soft">
-          <WifiOff className="h-10 w-10" aria-hidden="true" />
+          <AiIcon name="siren" className="h-12 w-12" />
         </span>
         <p className="mt-5 inline-flex rounded-full bg-amber-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-amber-700">Modo sin conexion</p>
         <h1 className="mt-4 text-2xl font-black text-emergency-700">Sin conexion</h1><p className="mt-1 text-sm font-bold text-ink">a internet</p>

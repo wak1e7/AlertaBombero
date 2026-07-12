@@ -3,26 +3,22 @@ import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import {
   Bell,
-  Camera,
   ChevronRight,
   ClipboardList,
   History,
   Home,
   LockKeyhole,
   MapPin,
-  Radio,
   ShieldCheck,
-  TimerReset,
-  UserRound,
-  UsersRound
+  UserRound
 } from "lucide-react";
+import { AiIcon } from "./components/AiIcon";
 import { AppShell } from "./components/AppShell";
 import { AuthCard } from "./components/AuthCard";
 import { BrandLogo } from "./components/BrandLogo";
 import { EmergencyButton } from "./components/EmergencyButton";
 import { StatusBadge } from "./components/StatusBadge";
 import accessHeroBackground from "./assets/access-hero-background-ai.png";
-import { demoCredentials } from "./domain/demoCredentials";
 import { DEMO_OTP_CODE, verifySimulatedOtp } from "./domain/otp";
 import { getAuthMode } from "./lib/env";
 import { getSupabaseClient } from "./lib/supabase";
@@ -207,13 +203,13 @@ function RoleAccessScreen() {
             <p className="text-center text-xl font-black tracking-[-0.02em] text-ink">Como deseas continuar?</p>
           <RoleCard
             href="/ciudadano/login"
-            icon={<UsersRound className="h-9 w-9" />}
+            icon={<AiIcon name="citizens" className="h-11 w-11" />}
             title="Soy ciudadano"
             description={<>Reporta emergencias<br />y haz seguimiento</>}
           />
           <RoleCard
             href="/bombero/login"
-            icon={<ShieldCheck className="h-9 w-9" />}
+            icon={<AiIcon name="firefighter" className="h-12 w-12" />}
             title="Soy bombero"
             description={<>Accede al panel operativo<br />y atiende emergencias</>}
             featured
@@ -221,8 +217,8 @@ function RoleAccessScreen() {
           </div>
 
           <div className="mobile-access-trust mt-5 grid w-full grid-cols-2 gap-3">
-            <TrustCard icon={<LockKeyhole className="h-6 w-6" />} title="Datos seguros" description="Tu informacion esta protegida y encriptada." />
-            <TrustCard icon={<TimerReset className="h-6 w-6" />} title="Respuesta rapida" description="Conexion directa con bomberos y estaciones." />
+            <TrustCard icon={<AiIcon name="secure" className="h-9 w-9" />} title="Datos seguros" description="Tu informacion esta protegida y encriptada." />
+            <TrustCard icon={<AiIcon name="rapid" className="h-9 w-9" />} title="Respuesta rapida" description="Conexion directa con bomberos y estaciones." />
           </div>
 
           <footer className="mobile-access-footer mt-auto w-full pt-5 text-center">
@@ -340,14 +336,6 @@ function CitizenLoginScreen() {
             placeholder="Ingresa tu contrasena"
           />
           <FormError message={error} />
-          {isDemoAuth() ? (
-            <DemoHint
-              lines={[
-                `Demo: ${demoCredentials.citizen.phone}`,
-                `Contrasena: ${demoCredentials.citizen.password}`
-              ]}
-            />
-          ) : null}
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
@@ -416,14 +404,6 @@ function CitizenRegisterScreen() {
             onChange={(password) => setForm((current) => ({ ...current, password }))}
           />
           <FormError message={error} />
-          {isDemoAuth() ? (
-            <DemoHint
-              lines={[
-                `Demo: ${demoCredentials.firefighters[0].code}`,
-                `Contrasena: ${demoCredentials.firefighters[0].password}`
-              ]}
-            />
-          ) : null}
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Creando..." : "Continuar"}
           </button>
@@ -471,7 +451,7 @@ function FirefighterLoginScreen() {
 
   return (
     <AppShell compact>
-      <AuthCard title="Acceso bombero" subtitle="Ingresa tus credenciales para continuar" backTo="/">
+      <AuthCard title="Acceso bombero" subtitle="Ingresa tus datos para continuar" backTo="/">
         <form className="space-y-4" onSubmit={onSubmit}>
           <TextInput
             label="Codigo de bombero"
@@ -485,9 +465,6 @@ function FirefighterLoginScreen() {
             value={form.password}
             onChange={(password) => setForm((current) => ({ ...current, password }))}
           />
-          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs font-medium text-amber-800">
-            El bombero debe existir precargado. La cuenta Auth se vincula al codigo operativo.
-          </p>
           <FormError message={error} />
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Validando..." : "Ingresar"}
@@ -517,7 +494,7 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
     if (!pending) return;
 
     if (!isDemoAuth()) {
-      setError("Autenticacion productiva aun no esta configurada.");
+      setError("No se pudo verificar tu identidad. Intenta nuevamente.");
       return;
     }
 
@@ -553,11 +530,6 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
     <AppShell compact>
       <AuthCard title="Verificar identidad" subtitle="Ingresa el codigo de seguridad" backTo={expectedRole === "citizen" ? "/ciudadano/login" : "/bombero/login"}>
         <form className="space-y-4" onSubmit={onSubmit}>
-          {isDemoAuth() ? (
-            <p className="rounded-lg border border-emergency-100 bg-emergency-50 p-3 text-center text-xs font-semibold text-emergency-700">
-              OTP simulado para demo: {DEMO_OTP_CODE}
-            </p>
-          ) : null}
           <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emergency-50 text-emergency-600"><LockKeyhole className="h-8 w-8" /></div>
           <label className="field-label text-center">Codigo de 6 digitos
             <input aria-label="Codigo OTP" className="otp-code mt-3" inputMode="numeric" maxLength={6} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} placeholder="------" value={code} />
@@ -649,8 +621,8 @@ function WelcomeScreen({ role }: { role: "citizen" | "firefighter" }) {
           </h1>
           <p className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-success"><ShieldCheck className="h-4 w-4" /> Cuenta verificada</p>
           <div className="mt-5 space-y-2 text-left">
-            <WelcomeFeature icon={role === "citizen" ? <MapPin /> : <UsersRound />} title={role === "citizen" ? "Ubicacion automatica" : "Compania asignada"} text={role === "citizen" ? "Detectamos tu ubicacion para enviar ayuda rapidamente." : "Accede a reportes asignados a tu compania."} />
-            <WelcomeFeature icon={role === "citizen" ? <Camera /> : <Radio />} title={role === "citizen" ? "Evidencia obligatoria" : "Estados operativos"} text={role === "citizen" ? "Adjunta fotos o videos para que te puedan atender." : "Actualiza el estado de cada emergencia en tiempo real."} />
+            <WelcomeFeature icon={<AiIcon name={role === "citizen" ? "citizens" : "firefighter"} className="h-7 w-7" />} title={role === "citizen" ? "Ubicacion automatica" : "Compania asignada"} text={role === "citizen" ? "Detectamos tu ubicacion para enviar ayuda rapidamente." : "Accede a reportes asignados a tu compania."} />
+            <WelcomeFeature icon={<AiIcon name={role === "citizen" ? "accident" : "siren"} className="h-7 w-7" />} title={role === "citizen" ? "Evidencia obligatoria" : "Estados operativos"} text={role === "citizen" ? "Adjunta fotos o videos para que te puedan atender." : "Actualiza el estado de cada emergencia en tiempo real."} />
           </div>
           <Link className="btn-primary mt-5" to={href}>{label}<ChevronRight className="h-4 w-4" /></Link>
         </div>
@@ -697,17 +669,6 @@ function FormError({ message }: { message: string }) {
     <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700" role="alert">
       {message}
     </p>
-  );
-}
-
-function DemoHint({ lines }: { lines: string[] }) {
-  return (
-    <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-3 text-xs font-semibold text-muted">
-      {lines.map((line) => (
-        <p key={line}>{line}</p>
-      ))}
-      <p>OTP: {DEMO_OTP_CODE}</p>
-    </div>
   );
 }
 

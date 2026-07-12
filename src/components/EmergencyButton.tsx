@@ -1,4 +1,4 @@
-import { Siren } from "lucide-react";
+import { AiIcon } from "./AiIcon";
 
 export function EmergencyButton({ onClick }: { onClick?: () => void }) {
   return (
@@ -9,7 +9,7 @@ export function EmergencyButton({ onClick }: { onClick?: () => void }) {
       type="button"
     >
       <span className="grid place-items-center gap-2 text-center">
-        <Siren className="h-12 w-12" />
+        <AiIcon className="h-14 w-14" name="siren" />
         <span className="text-[15px] font-black leading-tight">
           REPORTAR
           <br />
