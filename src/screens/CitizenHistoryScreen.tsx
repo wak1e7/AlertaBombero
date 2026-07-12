@@ -61,7 +61,7 @@ export function CitizenHistoryScreen({ navItems }: { navItems: Parameters<typeof
         <HistoryFilter active={filter === "active"} label="Activos" onClick={() => setFilter("active")} />
         <HistoryFilter active={filter === "finished"} label="Finalizados" onClick={() => setFilter("finished")} />
       </div>
-      <section className="mt-5 space-y-3">
+      <section className="mt-4 space-y-2.5">
         {loading ? <p className="text-sm font-semibold text-muted" role="status">Cargando reportes...</p> : null}
         {!loading && visibleReports.length === 0 ? (
           <p className="app-card p-4 text-sm font-semibold text-muted">
@@ -70,7 +70,7 @@ export function CitizenHistoryScreen({ navItems }: { navItems: Parameters<typeof
         ) : null}
         {visibleReports.map((report) => (
           <Link
-            className="app-card flex items-center gap-3 p-3.5 transition hover:border-emergency-200"
+            className="app-card flex min-h-28 items-center gap-3 p-3.5 transition hover:border-emergency-200"
             key={report.id}
             to={`/ciudadano/seguimiento/${report.id}`}
           >
