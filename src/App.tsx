@@ -279,10 +279,9 @@ function RoleCard({
 
 function TrustCard({ description, icon, title }: { description: string; icon: React.ReactNode; title: string }) {
   return (
-    <article className="min-h-36 rounded-[1.15rem] border border-slate-200/80 bg-white/90 p-4 shadow-[0_5px_16px_rgba(31,38,51,0.04)]">
-      <span className="grid h-12 w-12 place-items-center rounded-full bg-emergency-50 text-emergency-600">{icon}</span>
-      <h2 className="mt-3 text-sm font-black tracking-[-0.02em] text-ink">{title}</h2>
-      <p className="mt-1 text-xs leading-relaxed text-slate-500">{description}</p>
+    <article className="flex min-h-[5.75rem] items-center gap-2.5 rounded-[1.15rem] border border-slate-200/80 bg-white/90 p-3 shadow-[0_5px_16px_rgba(31,38,51,0.04)]">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emergency-50 text-emergency-600">{icon}</span>
+      <div className="min-w-0"><h2 className="text-[11px] font-black leading-tight tracking-[-0.02em] text-ink">{title}</h2><p className="mt-1 text-[9px] leading-snug text-slate-500">{description}</p></div>
     </article>
   );
 }
