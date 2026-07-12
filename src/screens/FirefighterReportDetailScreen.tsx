@@ -146,7 +146,7 @@ export function FirefighterReportDetailScreen() {
       {error ? <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">{error}</p> : null}
 
       {report ? (
-        <section className="mt-5 space-y-4">
+        <section className="firefighter-detail mt-5 space-y-3">
           <div className="app-card p-4">
             <div className="flex items-center gap-3"><ReportTypeIcon type={report.type} /><div><StatusBadge status={report.status} /><h2 className="mt-1 text-xl font-black text-ink">{report.type}</h2></div></div>
             <p className="mt-3 text-sm font-medium text-muted">{report.description ?? "Sin descripcion adicional"}</p>
@@ -190,13 +190,14 @@ export function FirefighterReportDetailScreen() {
               ) : null}
               {report.evidence.map((item) => (
                 <a
-                  className="block rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-emergency-600"
+                  className="block overflow-hidden rounded-lg border border-slate-200 bg-white text-sm font-bold text-emergency-600"
                   href={item.signedUrl}
                   key={item.id}
                   rel="noreferrer"
                   target="_blank"
                 >
-                  Ver {item.file_type.startsWith("video/") ? "video" : "imagen"}
+                  {item.file_type.startsWith("video/") ? <video className="h-36 w-full bg-slate-950 object-cover" muted preload="metadata" src={item.signedUrl} /> : <img alt="Evidencia del reporte" className="h-36 w-full object-cover" src={item.signedUrl} />}
+                  <span className="flex items-center justify-between px-3 py-2">Ver {item.file_type.startsWith("video/") ? "video" : "imagen"}<span className="text-[10px] text-muted">Abrir</span></span>
                 </a>
               ))}
             </div>
@@ -205,9 +206,9 @@ export function FirefighterReportDetailScreen() {
           <StatusTimeline items={history} />
 
           {action ? (
-            <button className="btn-primary" disabled={saving} onClick={advanceStatus} type="button">
+            <div className="sticky bottom-0 -mx-4 bg-app/95 px-4 pb-2 pt-3 backdrop-blur"><button className="btn-primary" disabled={saving} onClick={advanceStatus} type="button">
               {saving ? "Actualizando..." : action.label}
-            </button>
+            </button></div>
           ) : (
             <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm font-bold text-muted">
               Este reporte ya no acepta cambios operativos.

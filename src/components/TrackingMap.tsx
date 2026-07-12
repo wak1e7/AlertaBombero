@@ -16,7 +16,7 @@ export function TrackingMap({
 
   return (
     <div className="app-card overflow-hidden">
-      <MapContainer center={center} className="h-60 w-full sm:h-64" scrollWheelZoom={false} zoom={14}>
+      <MapContainer center={center} className="h-56 w-full sm:h-64" scrollWheelZoom={false} zoom={14}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
