@@ -25,7 +25,7 @@ export function AuthCard({
     <section className={`relative isolate bg-white px-5 py-4 sm:px-7 ${scrollable ? "min-h-dvh" : "h-dvh overflow-hidden"}`} style={{ backgroundImage: `url(${accessHeroBackground})`, backgroundPosition: "center top", backgroundRepeat: "no-repeat", backgroundSize: "100% auto" }}>
       <div className={`relative mx-auto w-full max-w-sm ${scrollable ? "pt-7" : "flex h-full flex-col"}`}>
         <header className={`auth-brand relative flex shrink-0 items-center justify-center ${scrollable ? "" : "pt-4"}`}>
-          <Link aria-label="Volver a seleccionar rol" className="absolute left-0 grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white/95 text-ink shadow-soft transition hover:bg-emergency-50 hover:text-emergency-700" to={backTo}>
+          <Link aria-label="Volver a seleccionar rol" className="absolute right-0 top-0 grid h-11 w-11 place-items-center rounded-lg border border-slate-200 bg-white/95 text-ink shadow-soft transition hover:bg-emergency-50 hover:text-emergency-700" to={backTo}>
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </Link>
           <BrandLogo large withName />
