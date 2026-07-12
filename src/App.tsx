@@ -34,6 +34,8 @@ import { FirefighterProfileScreen } from "./screens/FirefighterProfileScreen";
 import { FirefighterHistoryScreen } from "./screens/FirefighterHistoryScreen";
 import { FirefighterReportDetailScreen } from "./screens/FirefighterReportDetailScreen";
 import { FirefighterReportsScreen } from "./screens/FirefighterReportsScreen";
+import { AccessibilitySettingsScreen } from "./screens/AccessibilitySettingsScreen";
+import { loadAccessibilitySettings } from "./services/accessibility";
 import { createAuthService } from "./services/authService";
 import {
   clearActiveSessionId,
@@ -54,7 +56,22 @@ function isDemoAuth() {
 }
 
 export function App() {
+  const [accessibility, setAccessibility] = useState(loadAccessibilitySettings);
+
+  useEffect(() => {
+    const refresh = () => setAccessibility(loadAccessibilitySettings());
+    window.addEventListener("alertabombero:accessibility", refresh);
+    return () => window.removeEventListener("alertabombero:accessibility", refresh);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${16 * accessibility.textScale}px`;
+    return () => { document.documentElement.style.fontSize = ""; };
+  }, [accessibility.textScale]);
+
   return (
+    <div className="accessibility-shell" data-bold-text={accessibility.boldText} data-color-filter={accessibility.colorFilter} data-dyslexia-font={accessibility.dyslexiaFont} data-high-contrast={accessibility.highContrast} data-large-targets={accessibility.largerTouchTargets} data-reduce-motion={accessibility.reduceMotion} data-reduce-transparency={accessibility.reduceTransparency} style={{ "--accessibility-line-spacing": accessibility.lineSpacing } as React.CSSProperties}>
+      {accessibility.readingMask ? <div className="reading-mask" aria-hidden="true" /> : null}
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<RoleAccessScreen />} />
@@ -104,6 +121,7 @@ export function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/ciudadano/configuracion" element={<ProtectedRoute role="citizen" loginPath="/ciudadano/login"><AccessibilitySettingsScreen backTo="/ciudadano/perfil" navItems={citizenNavItems} /></ProtectedRoute>} />
         <Route path="/bombero/login" element={<FirefighterLoginScreen />} />
         <Route path="/bombero/otp" element={<OtpScreen expectedRole="firefighter" />} />
         <Route path="/bombero/bienvenida" element={<WelcomeScreen role="firefighter" />} />
@@ -147,9 +165,11 @@ export function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/bombero/configuracion" element={<ProtectedRoute role="firefighter" loginPath="/bombero/login"><AccessibilitySettingsScreen backTo="/bombero/perfil" navItems={firefighterNavItems} /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </div>
   );
 }
 
