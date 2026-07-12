@@ -21,6 +21,7 @@ export function CitizenReportScreen() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("details");
   const [type, setType] = useState("");
+  const [otherType, setOtherType] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState<ReportLocation | null>(null);
   const [evidence, setEvidence] = useState<File | null>(null);
@@ -76,12 +77,11 @@ export function CitizenReportScreen() {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          addressText: "Ubicacion actual detectada",
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        });
+      async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        const addressText = await resolveAddress(latitude, longitude);
+        setLocation({ addressText, latitude, longitude });
         requestIdRef.current = null;
         setLocating(false);
       },
@@ -109,7 +109,7 @@ export function CitizenReportScreen() {
 
     try {
       const result = await createEmergencyReport(getSupabaseClient(), {
-        description,
+        description: type === "OTRO" ? `Tipo indicado: ${otherType.trim()}${description.trim() ? `\n\n${description.trim()}` : ""}` : description,
         evidence,
         location,
         type
@@ -130,6 +130,10 @@ export function CitizenReportScreen() {
       setError(currentValidation.errors[0] ?? "Completa el reporte antes de enviarlo.");
       return;
     }
+    if (type === "OTRO" && !otherType.trim()) {
+      setError("Describe el tipo de emergencia.");
+      return;
+    }
     requestIdRef.current ??= crypto.randomUUID();
     setCountdown(5);
     setError("");
@@ -143,7 +147,7 @@ export function CitizenReportScreen() {
   return (
     <AppShell>
       <header className="screen-header flex items-center gap-3 pt-5">
-        <Link aria-label="Volver al inicio" className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-ink shadow-soft" to="/ciudadano/inicio">
+        <Link aria-label="Volver al inicio" className="icon-button shrink-0" to="/ciudadano/inicio">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div className="min-w-0 flex-1">
@@ -181,6 +185,7 @@ export function CitizenReportScreen() {
                   onClick={() => {
                     requestIdRef.current = null;
                     setType(item.value);
+                    if (item.value !== "OTRO") setOtherType("");
                   }}
                   type="button"
                 >
@@ -189,6 +194,13 @@ export function CitizenReportScreen() {
                 </button>
               ))}
             </div>
+            {type === "OTRO" ? (
+              <label className="field-label mt-3 block">
+                Indica la emergencia
+                <input className="field-control" maxLength={80} onChange={(event) => { requestIdRef.current = null; setOtherType(event.target.value); }} placeholder="Ej. Fuga de gas, derrumbe, cable electrico caido" value={otherType} />
+                <span className="mt-1 block text-[11px] font-medium text-muted">Este detalle se enviara directamente a la compania asignada.</span>
+              </label>
+            ) : null}
           </div>
 
           <div className="app-card overflow-hidden">
@@ -218,7 +230,7 @@ export function CitizenReportScreen() {
             />
           </label>
 
-          <div className="sticky bottom-0 -mx-4 bg-app/95 px-4 pb-2 pt-3 backdrop-blur"><button className="btn-primary" onClick={() => setStep("evidence")} type="button">Continuar</button></div>
+          <div className="sticky bottom-0 -mx-4 bg-app/95 px-4 pb-2 pt-3 backdrop-blur"><button className="btn-primary" onClick={() => { if (type === "OTRO" && !otherType.trim()) { setError("Describe el tipo de emergencia antes de continuar."); return; } setError(""); setStep("evidence"); }} type="button">Continuar</button></div>
         </section>
       ) : null}
 
@@ -274,9 +286,9 @@ export function CitizenReportScreen() {
         <section className="report-step mt-5 space-y-3">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-800"><AlertTriangle className="mr-2 inline h-4 w-4" />Ultimo paso. Una vez enviado, la compania sera notificada.</div>
           <p className="text-sm font-black text-ink">Resumen de tu reporte</p>
-          <SummaryRow label="Tipo" value={emergencyTypes.find((item) => item.value === type)?.label ?? "Sin seleccionar"} />
-          <SummaryRow label="Ubicacion" value={location?.addressText ?? "Sin ubicacion"} />
-          <SummaryRow label="Evidencia" value={evidence?.name ?? "Sin evidencia"} />
+          <SummaryRow label="Tipo" value={emergencyTypes.find((item) => item.value === type)?.label ?? "Sin seleccionar"} detail={type === "OTRO" ? otherType || "Sin detalle adicional" : undefined} />
+          <SummaryRow label="Ubicacion" value={location?.addressText ?? "Sin ubicacion"} detail={location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : undefined} />
+          <EvidenceSummary evidence={evidence} preview={evidencePreview} />
           <SummaryRow label="Descripcion" value={description || "Sin descripcion adicional"} />
           {!validation.ok ? <FormError message={validation.errors[0] ?? ""} /> : null}
           <div className="sticky bottom-0 -mx-4 space-y-2 bg-app/95 px-4 pb-2 pt-3 backdrop-blur"><button className="btn-primary" disabled={!validation.ok} onClick={startCountdown} type="button"><Send className="h-4 w-4" />Enviar reporte</button><button className="btn-secondary" onClick={() => setStep("evidence")} type="button">Editar evidencia</button></div>
@@ -311,13 +323,39 @@ export function CitizenReportScreen() {
   );
 }
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryRow({ detail, label, value }: { detail?: string; label: string; value: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
       <p className="text-xs font-bold uppercase tracking-wide text-muted">{label}</p>
       <p className="mt-1 break-words text-sm font-bold text-ink">{value}</p>
+      {detail ? <p className="mt-1 break-words text-xs font-medium leading-relaxed text-muted">{detail}</p> : null}
     </div>
   );
+}
+
+function EvidenceSummary({ evidence, preview }: { evidence: File | null; preview: string | null }) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="p-4"><p className="text-xs font-bold uppercase tracking-wide text-muted">Evidencia</p><p className="mt-1 break-words text-sm font-bold text-ink">{evidence?.name ?? "Sin evidencia"}</p></div>
+      {evidence && preview ? evidence.type.startsWith("video/") ? <video className="h-44 w-full bg-slate-950 object-cover" controls src={preview} /> : <img alt="Vista previa de la evidencia adjunta" className="h-44 w-full object-cover" src={preview} /> : null}
+    </div>
+  );
+}
+
+async function resolveAddress(latitude: number, longitude: number): Promise<string> {
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error("No se pudo resolver la direccion.");
+    const data = await response.json() as { address?: Record<string, string>; display_name?: string };
+    const address = data.address ?? {};
+    const street = [address.road || address.pedestrian || address.footway, address.house_number].filter(Boolean).join(" ");
+    const district = address.suburb || address.neighbourhood || address.city_district;
+    const city = address.city || address.town || address.village || "Chiclayo";
+    const readable = [street, district, city].filter(Boolean).join(", ");
+    return readable || data.display_name || "Ubicacion actual detectada";
+  } catch {
+    return "Ubicacion actual detectada";
+  }
 }
 
 function FormError({ message }: { message: string }) {

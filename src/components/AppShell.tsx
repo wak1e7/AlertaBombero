@@ -28,7 +28,7 @@ export function AppShell({
           {online ? children : <OfflineEmergencyScreen onRetry={retry} />}
         </div>
         {navItems.length > 0 ? (
-          <nav aria-label="Navegacion principal" className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200/80 bg-white/95 shadow-[0_-8px_20px_rgba(31,38,51,0.06)] backdrop-blur">
+          <nav aria-label="Navegacion principal" className="fixed bottom-0 left-1/2 z-20 w-full max-w-md -translate-x-1/2 border-x border-t border-slate-200/80 bg-white/95 shadow-[0_-8px_20px_rgba(31,38,51,0.06)] backdrop-blur">
             <div className="mx-auto grid h-[4.5rem] max-w-md grid-cols-3 gap-1 px-4 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1.5">
               {navItems.map((item) => {
                 const Icon = item.icon;
