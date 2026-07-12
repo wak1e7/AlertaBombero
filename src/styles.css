@@ -182,6 +182,10 @@ textarea:focus-visible {
     @apply mt-2 min-h-12 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-sm font-medium text-ink outline-none transition placeholder:text-slate-400 focus:border-emergency-500 focus:ring-4 focus:ring-emergency-100;
   }
 
+  .otp-code {
+    @apply block min-h-14 w-full rounded-lg border border-slate-200 bg-white px-3 text-center text-2xl font-black tracking-[0.45em] text-ink outline-none transition placeholder:tracking-[0.25em] placeholder:text-slate-300 focus:border-emergency-500 focus:ring-4 focus:ring-emergency-100;
+  }
+
   .screen-header {
     @apply sticky top-0 z-10 -mx-4 border-b border-slate-100 bg-app/95 px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur sm:-mx-5 sm:px-5;
   }

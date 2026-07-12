@@ -284,11 +284,12 @@ export function CitizenReportScreen() {
       ) : null}
 
       {step === "countdown" ? (
-        <section className="mt-10 text-center">
-          <div className="mx-auto grid h-44 w-44 place-items-center rounded-full border-[4px] border-emergency-600 bg-white text-6xl font-black text-ink shadow-soft">
+        <section className="fixed inset-0 z-50 grid place-items-center bg-black/55 px-5 text-center">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="mx-auto grid h-40 w-40 place-items-center rounded-full border-[4px] border-emergency-600 bg-white text-6xl font-black text-ink shadow-soft">
             {sending ? "..." : countdown}
           </div>
-          <p className="mt-6 text-sm font-bold text-ink">
+          <p className="mt-5 text-sm font-bold text-ink">
             {sending ? "Enviando reporte..." : "Se enviara el reporte. Puedes cancelar antes de que llegue a cero."}
           </p>
           <button
@@ -303,6 +304,7 @@ export function CitizenReportScreen() {
             <X className="h-4 w-4" />
             Cancelar envio
           </button>
+          </div>
         </section>
       ) : null}
     </AppShell>

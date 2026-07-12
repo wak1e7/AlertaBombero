@@ -523,12 +523,10 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
               OTP simulado para demo: {DEMO_OTP_CODE}
             </p>
           ) : null}
-          <TextInput
-            label="Codigo OTP"
-            value={code}
-            onChange={setCode}
-            placeholder={isDemoAuth() ? "116116" : "Codigo recibido"}
-          />
+          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emergency-50 text-emergency-600"><LockKeyhole className="h-8 w-8" /></div>
+          <label className="field-label text-center">Codigo de 6 digitos
+            <input aria-label="Codigo OTP" className="otp-code mt-3" inputMode="numeric" maxLength={6} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} placeholder="------" value={code} />
+          </label>
           <FormError message={error} />
           <button className="btn-primary" disabled={loading} type="submit">
             {loading ? "Verificando..." : "Verificar"}
