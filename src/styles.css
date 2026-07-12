@@ -131,7 +131,7 @@ textarea:focus-visible {
   }
 
   .mobile-access-trust article {
-    min-height: 5.75rem;
+    min-height: 6.25rem;
     padding: 0.75rem;
   }
 
@@ -146,12 +146,14 @@ textarea:focus-visible {
   }
 
   .mobile-access-trust h2 {
-    margin-top: 0.5rem;
+    margin-top: 0;
     font-size: 0.7rem;
   }
 
   .mobile-access-trust p {
-    display: none;
+    display: block;
+    font-size: 0.58rem;
+    line-height: 1.25;
   }
 
   .mobile-access-footer {
