@@ -683,11 +683,12 @@ function errorMessage(caught: unknown) {
 
 function CitizenHome() {
   const navigate = useNavigate();
+  const profileName = useProfileName();
 
   return (
     <AppShell navItems={citizenNavItems}>
       <div className="mobile-home flex min-h-[calc(100dvh-7rem)] flex-col">
-      <DashboardHeader eyebrow="Bienvenido" title="Juan Perez" />
+      <DashboardHeader eyebrow="Bienvenido" title={profileName} />
       <CitizenLocationCard />
       <section className="my-auto pb-2 pt-6 text-center">
         <p className="text-lg font-black text-ink">Necesitas ayuda de emergencia?</p>
@@ -734,10 +735,12 @@ function CitizenLocationCard() {
 }
 
 export function FirefighterHome() {
+  const profileName = useProfileName();
+
   return (
     <AppShell navItems={firefighterNavItems}>
       <div className="mobile-home flex min-h-[calc(100dvh-7rem)] flex-col">
-      <DashboardHeader eyebrow="Bienvenido" title="Carlos Ramirez" />
+      <DashboardHeader eyebrow="Bienvenido" title={profileName} />
       <section className="app-card mt-4 p-3.5">
         <div className="flex items-center justify-between">
           <div>
@@ -757,6 +760,39 @@ export function FirefighterHome() {
       </section></div>
     </AppShell>
   );
+}
+
+function useProfileName() {
+  const [profileName, setProfileName] = useState("Cargando...");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadProfileName() {
+      const { data: sessionData } = await getSupabaseClient().auth.getSession();
+      const authUserId = sessionData.session?.user.id;
+      if (!authUserId) {
+        if (active) setProfileName("Usuario");
+        return;
+      }
+
+      const { data } = await getSupabaseClient()
+        .from("profiles")
+        .select("name,last_name")
+        .eq("auth_user_id", authUserId)
+        .maybeSingle();
+
+      if (active) {
+        const name = [data?.name, data?.last_name].filter(Boolean).join(" ");
+        setProfileName(name || "Usuario");
+      }
+    }
+
+    void loadProfileName();
+    return () => { active = false; };
+  }, []);
+
+  return profileName;
 }
 
 function DashboardHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
