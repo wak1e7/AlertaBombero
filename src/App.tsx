@@ -9,6 +9,7 @@ import {
   Home,
   LockKeyhole,
   MapPin,
+  RefreshCw,
   ShieldCheck,
   UserRound
 } from "lucide-react";
@@ -34,6 +35,7 @@ const AccessibilitySettingsScreen = lazy(() => import("./screens/AccessibilitySe
 const SettingsScreen = lazy(() => import("./screens/SettingsScreen").then(({ SettingsScreen }) => ({ default: SettingsScreen })));
 import { loadAccessibilitySettings } from "./services/accessibility";
 import { createAuthService } from "./services/authService";
+import { getDeviceLocation } from "./services/deviceLocationService";
 import {
   clearActiveSessionId,
   clearPendingAuth,
@@ -686,15 +688,7 @@ function CitizenHome() {
     <AppShell navItems={citizenNavItems}>
       <div className="mobile-home flex min-h-[calc(100dvh-7rem)] flex-col">
       <DashboardHeader eyebrow="Bienvenido" title="Juan Perez" />
-      <section className="app-card mt-4 p-3.5">
-        <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><MapPin className="h-5 w-5" /></span>
-          <div>
-            <p className="text-xs font-bold text-muted">Ubicacion actual</p>
-            <p className="mt-0.5 text-sm font-extrabold text-ink">Chiclayo, Lambayeque</p>
-          </div>
-        </div>
-      </section>
+      <CitizenLocationCard />
       <section className="my-auto pb-2 pt-6 text-center">
         <p className="text-lg font-black text-ink">Necesitas ayuda de emergencia?</p>
         <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-muted">Inicia un reporte rapido y agrega la informacion necesaria.</p>
@@ -704,6 +698,38 @@ function CitizenHome() {
         <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-success"><ShieldCheck className="h-3.5 w-3.5" /> Listo para reportar</p>
       </section></div>
     </AppShell>
+  );
+}
+
+function CitizenLocationCard() {
+  const [location, setLocation] = useState<{ addressText: string } | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  async function refreshLocation() {
+    setLoading(true);
+    setError("");
+    try {
+      setLocation(await getDeviceLocation());
+    } catch {
+      setLocation(null);
+      setError("Activa el permiso de ubicacion para mostrar tu direccion actual.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { void refreshLocation(); }, []);
+
+  return (
+    <section className="app-card mt-4 p-3.5">
+      <div className="flex items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><MapPin className="h-5 w-5" /></span>
+        <div className="min-w-0 flex-1"><p className="text-xs font-bold text-muted">Ubicacion actual</p><p className="mt-0.5 break-words text-sm font-extrabold text-ink">{loading ? "Detectando ubicacion..." : location?.addressText ?? "Ubicacion no disponible"}</p></div>
+        <button aria-label="Actualizar ubicacion" className="icon-button shrink-0" disabled={loading} onClick={() => void refreshLocation()} type="button"><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /></button>
+      </div>
+      {error ? <p className="mt-3 border-t border-slate-100 pt-3 text-[11px] font-medium leading-relaxed text-muted">{error}</p> : null}
+    </section>
   );
 }
 

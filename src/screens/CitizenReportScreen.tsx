@@ -7,15 +7,10 @@ import { TrackingMap } from "../components/TrackingMap";
 import { AppShell } from "../components/AppShell";
 import { emergencyTypes, validateReportDraft, type ReportLocation } from "../domain/report";
 import { getSupabaseClient } from "../lib/supabase";
+import { getDeviceLocation } from "../services/deviceLocationService";
 import { createEmergencyReport } from "../services/reportService";
 
 type Step = "details" | "evidence" | "summary" | "countdown";
-
-const fallbackLocation: ReportLocation = {
-  addressText: "Ubicacion aproximada en Chiclayo",
-  latitude: -6.7719,
-  longitude: -79.8408
-};
 
 export function CitizenReportScreen() {
   const navigate = useNavigate();
@@ -70,28 +65,16 @@ export function CitizenReportScreen() {
     setLocating(true);
     setError("");
 
-    if (!navigator.geolocation) {
-      setLocation(fallbackLocation);
-      setLocating(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        const addressText = await resolveAddress(latitude, longitude);
-        setLocation({ addressText, latitude, longitude });
+    getDeviceLocation()
+      .then((nextLocation) => {
+        setLocation(nextLocation);
         requestIdRef.current = null;
-        setLocating(false);
-      },
-      () => {
-        setLocation(fallbackLocation);
-        requestIdRef.current = null;
-        setLocating(false);
-      },
-      { enableHighAccuracy: true, maximumAge: 15000, timeout: 8000 }
-    );
+      })
+      .catch(() => {
+        setLocation(null);
+        setError("No pudimos acceder a tu ubicacion. Activa el permiso de ubicacion del navegador y vuelve a intentarlo.");
+      })
+      .finally(() => setLocating(false));
   }
 
   async function sendReport() {
@@ -340,22 +323,6 @@ function EvidenceSummary({ evidence, preview }: { evidence: File | null; preview
       {evidence && preview ? evidence.type.startsWith("video/") ? <video className="h-44 w-full bg-slate-950 object-cover" controls src={preview} /> : <img alt="Vista previa de la evidencia adjunta" className="h-44 w-full object-cover" src={preview} /> : null}
     </div>
   );
-}
-
-async function resolveAddress(latitude: number, longitude: number): Promise<string> {
-  try {
-    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`, { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error("No se pudo resolver la direccion.");
-    const data = await response.json() as { address?: Record<string, string>; display_name?: string };
-    const address = data.address ?? {};
-    const street = [address.road || address.pedestrian || address.footway, address.house_number].filter(Boolean).join(" ");
-    const district = address.suburb || address.neighbourhood || address.city_district;
-    const city = address.city || address.town || address.village || "Chiclayo";
-    const readable = [street, district, city].filter(Boolean).join(", ");
-    return readable || data.display_name || "Ubicacion actual detectada";
-  } catch {
-    return "Ubicacion actual detectada";
-  }
 }
 
 function FormError({ message }: { message: string }) {
