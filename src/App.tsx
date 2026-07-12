@@ -31,6 +31,7 @@ const FirefighterHistoryScreen = lazy(() => import("./screens/FirefighterHistory
 const FirefighterReportDetailScreen = lazy(() => import("./screens/FirefighterReportDetailScreen").then(({ FirefighterReportDetailScreen }) => ({ default: FirefighterReportDetailScreen })));
 const FirefighterReportsScreen = lazy(() => import("./screens/FirefighterReportsScreen").then(({ FirefighterReportsScreen }) => ({ default: FirefighterReportsScreen })));
 const AccessibilitySettingsScreen = lazy(() => import("./screens/AccessibilitySettingsScreen").then(({ AccessibilitySettingsScreen }) => ({ default: AccessibilitySettingsScreen })));
+const SettingsScreen = lazy(() => import("./screens/SettingsScreen").then(({ SettingsScreen }) => ({ default: SettingsScreen })));
 import { loadAccessibilitySettings } from "./services/accessibility";
 import { createAuthService } from "./services/authService";
 import {
@@ -118,7 +119,8 @@ export function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/ciudadano/configuracion" element={<ProtectedRoute role="citizen" loginPath="/ciudadano/login"><AccessibilitySettingsScreen backTo="/ciudadano/perfil" navItems={citizenNavItems} /></ProtectedRoute>} />
+        <Route path="/ciudadano/configuracion" element={<ProtectedRoute role="citizen" loginPath="/ciudadano/login"><SettingsScreen backTo="/ciudadano/perfil" navItems={citizenNavItems} role="citizen" /></ProtectedRoute>} />
+        <Route path="/ciudadano/configuracion/accesibilidad" element={<ProtectedRoute role="citizen" loginPath="/ciudadano/login"><AccessibilitySettingsScreen backTo="/ciudadano/configuracion" navItems={citizenNavItems} /></ProtectedRoute>} />
         <Route path="/bombero/login" element={<FirefighterLoginScreen />} />
         <Route path="/bombero/otp" element={<OtpScreen expectedRole="firefighter" />} />
         <Route path="/bombero/bienvenida" element={<WelcomeScreen role="firefighter" />} />
@@ -162,7 +164,8 @@ export function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/bombero/configuracion" element={<ProtectedRoute role="firefighter" loginPath="/bombero/login"><AccessibilitySettingsScreen backTo="/bombero/perfil" navItems={firefighterNavItems} /></ProtectedRoute>} />
+        <Route path="/bombero/configuracion" element={<ProtectedRoute role="firefighter" loginPath="/bombero/login"><SettingsScreen backTo="/bombero/perfil" navItems={firefighterNavItems} role="firefighter" /></ProtectedRoute>} />
+        <Route path="/bombero/configuracion/accesibilidad" element={<ProtectedRoute role="firefighter" loginPath="/bombero/login"><AccessibilitySettingsScreen backTo="/bombero/configuracion" navItems={firefighterNavItems} /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </Suspense>
