@@ -5,7 +5,7 @@ import { BrandLogo } from "../components/BrandLogo";
 import { ReportTypeIcon } from "../components/ReportTypeIcon";
 import { TrackingMap } from "../components/TrackingMap";
 import { AppShell } from "../components/AppShell";
-import { emergencyTypes, validateReportDraft, type ReportLocation } from "../domain/report";
+import { emergencyTypes, isAllowedEvidenceFile, validateReportDraft, type ReportLocation } from "../domain/report";
 import { getSupabaseClient } from "../lib/supabase";
 import { getDeviceLocation } from "../services/deviceLocationService";
 import { createEmergencyReport } from "../services/reportService";
@@ -123,6 +123,44 @@ export function CitizenReportScreen() {
     setStep("countdown");
   }
 
+  function continueToEvidence() {
+    if (!type) {
+      setError("Selecciona el tipo de emergencia.");
+      return;
+    }
+    if (type === "OTRO" && !otherType.trim()) {
+      setError("Describe el tipo de emergencia antes de continuar.");
+      return;
+    }
+    if (!location) {
+      setError("Confirma tu ubicacion antes de continuar.");
+      return;
+    }
+    setError("");
+    setStep("evidence");
+  }
+
+  function selectEvidence(file: File | null) {
+    requestIdRef.current = null;
+    if (!file) return;
+    if (!isAllowedEvidenceFile(file)) {
+      setEvidence(null);
+      setError("La evidencia debe ser una imagen o video de hasta 20 MB.");
+      return;
+    }
+    setError("");
+    setEvidence(file);
+  }
+
+  function continueToSummary() {
+    if (!evidence) {
+      setError("Adjunta una evidencia antes de revisar el reporte.");
+      return;
+    }
+    setError("");
+    setStep("summary");
+  }
+
   if (!online) {
     return <OfflineEmergencyScreen onRetry={() => window.dispatchEvent(new Event("online"))} />;
   }
@@ -187,7 +225,7 @@ export function CitizenReportScreen() {
           </div>
 
           <div className="app-card overflow-hidden">
-            {location ? <TrackingMap emergency={location} /> : <div className="grid h-44 place-items-center bg-emergency-50 text-xs font-semibold text-emergency-700">Detectando ubicacion...</div>}
+            {location ? <TrackingMap emergency={location} /> : <div className="grid h-44 place-items-center bg-emergency-50 px-5 text-center text-xs font-semibold text-emergency-700">{locating ? "Detectando ubicacion..." : "Ubicacion no disponible. Activa el permiso y actualiza."}</div>}
             <div className="p-3.5">
               <p className="text-sm font-black text-ink">2. Verifica tu ubicacion</p>
               <p className="mt-1 text-xs font-medium text-muted">
@@ -213,7 +251,7 @@ export function CitizenReportScreen() {
             />
           </label>
 
-          <div className="sticky bottom-0 -mx-4 bg-app/95 px-4 pb-2 pt-3 backdrop-blur"><button className="btn-primary" onClick={() => { if (type === "OTRO" && !otherType.trim()) { setError("Describe el tipo de emergencia antes de continuar."); return; } setError(""); setStep("evidence"); }} type="button">Continuar</button></div>
+          <div className="sticky bottom-0 -mx-4 bg-app/95 px-4 pb-2 pt-3 backdrop-blur"><button className="btn-primary" onClick={continueToEvidence} type="button">Continuar</button></div>
         </section>
       ) : null}
 
@@ -226,21 +264,18 @@ export function CitizenReportScreen() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <label className="grid min-h-24 cursor-pointer place-items-center rounded-lg border border-emergency-200 bg-emergency-50 p-3 text-emergency-700">
                 <span className="grid place-items-center gap-1.5"><Camera className="h-6 w-6" /><span className="text-xs font-extrabold">Tomar foto</span></span>
-                <input accept="image/*" capture="environment" className="hidden" onChange={(event) => { requestIdRef.current = null; setEvidence(event.target.files?.[0] ?? null); }} type="file" />
+                <input accept="image/*" capture="environment" className="hidden" onChange={(event) => selectEvidence(event.target.files?.[0] ?? null)} type="file" />
               </label>
               <label className="grid min-h-24 cursor-pointer place-items-center rounded-lg border border-emergency-200 bg-white p-3 text-emergency-700">
                 <span className="grid place-items-center gap-1.5"><Video className="h-6 w-6" /><span className="text-xs font-extrabold">Subir video</span></span>
-                <input accept="image/*,video/*" className="hidden" onChange={(event) => { requestIdRef.current = null; setEvidence(event.target.files?.[0] ?? null); }} type="file" />
+                <input accept="image/*,video/*" className="hidden" onChange={(event) => selectEvidence(event.target.files?.[0] ?? null)} type="file" />
               </label>
             </div>
             <label className="mt-3 inline-flex cursor-pointer items-center gap-2 text-xs font-bold text-muted hover:text-emergency-700"><Upload className="h-4 w-4" />Elegir desde archivos
               <input
                 accept="image/*,video/*"
                 className="hidden"
-                onChange={(event) => {
-                  requestIdRef.current = null;
-                  setEvidence(event.target.files?.[0] ?? null);
-                }}
+                onChange={(event) => selectEvidence(event.target.files?.[0] ?? null)}
                 type="file"
               />
             </label>
@@ -258,7 +293,7 @@ export function CitizenReportScreen() {
             <button className="btn-secondary" onClick={() => setStep("details")} type="button">
               Atras
             </button>
-            <button className="btn-primary" onClick={() => setStep("summary")} type="button">
+            <button className="btn-primary" onClick={continueToSummary} type="button">
               Revisar
             </button>
           </div>

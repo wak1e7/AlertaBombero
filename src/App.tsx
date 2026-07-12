@@ -2,7 +2,6 @@ import type React from "react";
 import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import {
-  Bell,
   ChevronRight,
   ClipboardList,
   History,
@@ -21,6 +20,7 @@ import { EmergencyButton } from "./components/EmergencyButton";
 import { StatusBadge } from "./components/StatusBadge";
 import accessHeroBackground from "./assets/access-hero-background-ai.png";
 import { DEMO_OTP_CODE, verifySimulatedOtp } from "./domain/otp";
+import { validateCitizenRegistration, validateFirefighterLogin, validatePhoneLogin } from "./domain/auth";
 import { getAuthMode } from "./lib/env";
 import { getSupabaseClient } from "./lib/supabase";
 const CitizenProfileScreen = lazy(() => import("./screens/CitizenProfileScreen").then(({ CitizenProfileScreen }) => ({ default: CitizenProfileScreen })));
@@ -296,6 +296,11 @@ function CitizenLoginScreen() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    const validation = validatePhoneLogin(form);
+    if (!validation.success) {
+      setError(validation.error.issues[0]?.message ?? "Revisa los datos ingresados.");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -326,16 +331,19 @@ function CitizenLoginScreen() {
   return (
     <AppShell compact>
       <AuthCard title="Iniciar sesion" subtitle="Accede a tu cuenta ciudadana" backTo="/">
-        <form className="space-y-4" onSubmit={onSubmit}>
+        <form className="space-y-4" noValidate onSubmit={onSubmit}>
           <TextInput
             label="Telefono"
             value={form.phone}
             onChange={(phone) => setForm((current) => ({ ...current, phone }))}
+            autoComplete="tel"
+            inputMode="tel"
             placeholder="+51 999 999 999"
           />
           <TextInput
             label="Contrasena"
             type="password"
+            autoComplete="current-password"
             value={form.password}
             onChange={(password) => setForm((current) => ({ ...current, password }))}
             placeholder="Ingresa tu contrasena"
@@ -365,6 +373,11 @@ function CitizenRegisterScreen() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    const validation = validateCitizenRegistration(form);
+    if (!validation.success) {
+      setError(validation.error.issues[0]?.message ?? "Revisa los datos ingresados.");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -388,23 +401,28 @@ function CitizenRegisterScreen() {
   return (
     <AppShell compact>
       <AuthCard title="Crear cuenta" subtitle="Registro ciudadano seguro" backTo="/ciudadano/login" scrollable>
-        <form className="space-y-3" onSubmit={onSubmit}>
-          <TextInput label="Nombres" value={form.name} onChange={(name) => setForm((current) => ({ ...current, name }))} />
+        <form className="space-y-3" noValidate onSubmit={onSubmit}>
+          <TextInput autoComplete="given-name" label="Nombres" maxLength={80} value={form.name} onChange={(name) => setForm((current) => ({ ...current, name }))} />
           <TextInput
             label="Apellidos"
+            autoComplete="family-name"
+            maxLength={80}
             value={form.lastName}
             onChange={(lastName) => setForm((current) => ({ ...current, lastName }))}
           />
           <TextInput
             label="Telefono"
+            autoComplete="tel"
+            inputMode="tel"
             value={form.phone}
             onChange={(phone) => setForm((current) => ({ ...current, phone }))}
             placeholder="+51 999 999 999"
           />
-          <TextInput label="DNI" value={form.dni} onChange={(dni) => setForm((current) => ({ ...current, dni }))} />
+          <TextInput inputMode="numeric" label="DNI" maxLength={8} value={form.dni} onChange={(dni) => setForm((current) => ({ ...current, dni: dni.replace(/\D/g, "") }))} />
           <TextInput
             label="Contrasena"
             type="password"
+            autoComplete="new-password"
             value={form.password}
             onChange={(password) => setForm((current) => ({ ...current, password }))}
           />
@@ -427,6 +445,11 @@ function FirefighterLoginScreen() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    const validation = validateFirefighterLogin(form);
+    if (!validation.success) {
+      setError(validation.error.issues[0]?.message ?? "Revisa los datos ingresados.");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -457,16 +480,19 @@ function FirefighterLoginScreen() {
   return (
     <AppShell compact>
       <AuthCard title="Acceso bombero" subtitle="Ingresa tus datos para continuar" backTo="/">
-        <form className="space-y-4" onSubmit={onSubmit}>
+        <form className="space-y-4" noValidate onSubmit={onSubmit}>
           <TextInput
             label="Codigo de bombero"
+            autoComplete="username"
+            maxLength={6}
+            onChange={(firefighterCode) => setForm((current) => ({ ...current, firefighterCode: firefighterCode.toUpperCase() }))}
             value={form.firefighterCode}
-            onChange={(firefighterCode) => setForm((current) => ({ ...current, firefighterCode }))}
             placeholder="A24982"
           />
           <TextInput
             label="Contrasena"
             type="password"
+            autoComplete="current-password"
             value={form.password}
             onChange={(password) => setForm((current) => ({ ...current, password }))}
           />
@@ -497,6 +523,11 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!pending) return;
+
+    if (!/^\d{6}$/.test(code)) {
+      setError("Ingresa los 6 digitos del codigo.");
+      return;
+    }
 
     if (!isDemoAuth()) {
       setError("No se pudo verificar tu identidad. Intenta nuevamente.");
@@ -534,10 +565,10 @@ function OtpScreen({ expectedRole }: { expectedRole: "citizen" | "firefighter" }
   return (
     <AppShell compact>
       <AuthCard title="Verificar identidad" subtitle="Ingresa el codigo de seguridad" backTo={expectedRole === "citizen" ? "/ciudadano/login" : "/bombero/login"}>
-        <form className="space-y-4" onSubmit={onSubmit}>
+        <form className="space-y-4" noValidate onSubmit={onSubmit}>
           <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emergency-50 text-emergency-600"><LockKeyhole className="h-8 w-8" /></div>
           <label className="field-label text-center">Codigo de 6 digitos
-            <input aria-label="Codigo OTP" className="otp-code mt-3" inputMode="numeric" maxLength={6} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} placeholder="------" value={code} />
+            <input aria-label="Codigo OTP" autoComplete="one-time-code" className="otp-code mt-3" inputMode="numeric" maxLength={6} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} pattern="[0-9]{6}" placeholder="------" required value={code} />
           </label>
           <FormError message={error} />
           <button className="btn-primary" disabled={loading} type="submit">
@@ -641,13 +672,19 @@ function WelcomeFeature({ icon, text, title }: { icon: React.ReactNode; text: st
 }
 
 function TextInput({
+  autoComplete,
+  inputMode,
   label,
+  maxLength,
   onChange,
   placeholder,
   type = "text",
   value
 }: {
+  autoComplete?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   label: string;
+  maxLength?: number;
   onChange: (value: string) => void;
   placeholder?: string;
   type?: string;
@@ -658,8 +695,12 @@ function TextInput({
       {label}
       <input
         className="field-control"
+        autoComplete={autoComplete}
+        inputMode={inputMode}
+        maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
+        required
         type={type}
         value={value}
       />
@@ -800,7 +841,6 @@ function DashboardHeader({ eyebrow, title }: { eyebrow: string; title: string })
     <header className="pt-6">
       <div className="flex items-center justify-between">
         <BrandLogo withName />
-        <span className="grid h-9 w-9 place-items-center rounded-lg bg-emergency-50 text-emergency-600"><Bell className="h-4 w-4" /></span>
       </div>
       <p className="section-kicker mt-6">{eyebrow}</p>
       <h1 className="mt-1 text-2xl font-black text-ink">{title}</h1>
