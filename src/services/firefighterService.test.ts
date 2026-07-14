@@ -52,7 +52,7 @@ describe("firefighter service", () => {
 
   it("loads report detail and evidence signed urls", async () => {
     const reportQuery = createQueryMock({ id: "r1", status: "ENVIADO", type: "INCENDIO" });
-    const evidenceQuery = createQueryMock([{ file_url: "r1/foto.jpg", file_type: "image", id: "e1" }]);
+    const evidenceQuery = createQueryMock([{ file_name: "foto.jpg", file_url: "r1/foto.jpg", file_type: "image", id: "e1" }]);
     const createSignedUrl = vi.fn(() => Promise.resolve({ data: { signedUrl: "https://signed.test/foto.jpg" }, error: null }));
     const client = {
       from: vi.fn((table: string) => (table === "emergency_reports" ? reportQuery : evidenceQuery)),
@@ -65,6 +65,24 @@ describe("firefighter service", () => {
     expect(evidenceQuery.eq).toHaveBeenCalledWith("report_id", "r1");
     expect(createSignedUrl).toHaveBeenCalledWith("r1/foto.jpg", 300);
     expect(result.evidence[0].signedUrl).toBe("https://signed.test/foto.jpg");
+  });
+
+  it("shows a legacy retried attachment only once", async () => {
+    const reportQuery = createQueryMock({ id: "r1", status: "ENVIADO", type: "INCENDIO" });
+    const evidenceQuery = createQueryMock([
+      { file_name: "foto.jpg", file_url: "r1/first-foto.jpg", file_type: "image", id: "e1" },
+      { file_name: "foto.jpg", file_url: "r1/retried-foto.jpg", file_type: "image", id: "e2" }
+    ]);
+    const createSignedUrl = vi.fn(() => Promise.resolve({ data: { signedUrl: "https://signed.test/foto.jpg" }, error: null }));
+    const client = {
+      from: vi.fn((table: string) => (table === "emergency_reports" ? reportQuery : evidenceQuery)),
+      storage: { from: vi.fn(() => ({ createSignedUrl })) }
+    };
+
+    const result = await getFirefighterReportDetail(client, "r1");
+
+    expect(result.evidence).toHaveLength(1);
+    expect(createSignedUrl).toHaveBeenCalledTimes(1);
   });
 
   it("changes status through the server RPC", async () => {

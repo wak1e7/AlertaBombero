@@ -826,6 +826,7 @@ function CitizenLocationCard() {
 export function FirefighterHome() {
   const navigate = useNavigate();
   const profileName = useProfileName();
+  const companyName = useFirefighterCompanyName();
 
   return (
     <AppShell navItems={firefighterNavItems}>
@@ -835,7 +836,7 @@ export function FirefighterHome() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-muted">Compania asignada</p>
-            <p className="mt-1 text-sm font-extrabold text-ink">Cuerpo de Bomberos - Chiclayo</p>
+            <p className="mt-1 text-sm font-extrabold text-ink">{companyName}</p>
           </div>
           <StatusBadge status="RECIBIDO" />
         </div>
@@ -887,6 +888,41 @@ function useProfileName() {
   }, []);
 
   return profileName;
+}
+
+function useFirefighterCompanyName() {
+  const [companyName, setCompanyName] = useState("Cargando compania...");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadCompanyName() {
+      try {
+        const { data: sessionData } = await getSupabaseClient().auth.getSession();
+        const authUserId = sessionData.session?.user.id;
+        if (!authUserId) {
+          if (active) setCompanyName("Compania no registrada");
+          return;
+        }
+
+        const { data } = await getSupabaseClient()
+          .from("profiles")
+          .select("fire_companies(name)")
+          .eq("auth_user_id", authUserId)
+          .maybeSingle();
+
+        const profile = data as { fire_companies: { name: string } | null } | null;
+        if (active) setCompanyName(profile?.fire_companies?.name ?? "Compania no registrada");
+      } catch {
+        if (active) setCompanyName("Compania no registrada");
+      }
+    }
+
+    void loadCompanyName();
+    return () => { active = false; };
+  }, []);
+
+  return companyName;
 }
 
 function DashboardHeader({ eyebrow, title }: { eyebrow: string; title: string }) {

@@ -8,7 +8,7 @@ import { AppShell } from "../components/AppShell";
 import { emergencyTypes, isAllowedEvidenceFile, validateReportDraft, type ReportLocation } from "../domain/report";
 import { getSupabaseClient } from "../lib/supabase";
 import { getDeviceLocation } from "../services/deviceLocationService";
-import { createEmergencyReport } from "../services/reportService";
+import { createEmergencyReport, type SupabaseReportClient } from "../services/reportService";
 
 type Step = "details" | "evidence" | "summary" | "countdown";
 
@@ -91,7 +91,7 @@ export function CitizenReportScreen() {
     setError("");
 
     try {
-      const result = await createEmergencyReport(getSupabaseClient(), {
+      const result = await createEmergencyReport(getSupabaseClient() as unknown as SupabaseReportClient, {
         description: type === "OTRO" ? `Tipo indicado: ${otherType.trim()}${description.trim() ? `\n\n${description.trim()}` : ""}` : description,
         evidence,
         location,

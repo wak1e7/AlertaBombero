@@ -1,11 +1,16 @@
 import { buildReportStoragePath, validateReportDraft, type ReportDraft } from "../domain/report";
 import type { EmergencyStatus } from "../domain/emergencyStatus";
 
-type SupabaseReportClient = {
+export type SupabaseReportClient = {
   from: (table: string) => {
     insert: (payload: Record<string, unknown>) => {
       select: (columns?: string) => {
         single: () => PromiseLike<{ data: unknown; error: Error | null }>;
+      };
+    };
+    select: (columns?: string) => {
+      eq: (column: string, value: unknown) => {
+        maybeSingle: () => PromiseLike<{ data: unknown; error: Error | null }>;
       };
     };
   };
@@ -44,6 +49,17 @@ export async function createEmergencyReport(client: SupabaseReportClient, draft:
   }
 
   try {
+    // A repeated request can resolve to the same report through the idempotency key.
+    // Evidence is singular in this flow, so do not upload it a second time.
+    const { data: existingEvidence, error: existingEvidenceError } = await client
+      .from("report_evidence")
+      .select("id")
+      .eq("report_id", report.id)
+      .maybeSingle();
+
+    if (existingEvidenceError) throw existingEvidenceError;
+    if (existingEvidence) return { reportId: report.id, status: report.status };
+
     const filePath = buildReportStoragePath(report.id, draft.evidence);
     const { error: uploadError } = await client.storage.from("report-evidence").upload(filePath, draft.evidence, {
       contentType: draft.evidence.type,

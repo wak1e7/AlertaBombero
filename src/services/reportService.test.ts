@@ -6,10 +6,14 @@ function createMockClient() {
   const single = vi.fn().mockResolvedValue({ data: { id: "evidence-1" }, error: null });
   const select = vi.fn(() => ({ single }));
   const insert = vi.fn(() => ({ select }));
+  const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+  const selectExistingEvidence = vi.fn(() => ({
+    eq: vi.fn(() => ({ maybeSingle }))
+  }));
 
   return {
     client: {
-      from: vi.fn(() => ({ insert })),
+      from: vi.fn(() => ({ insert, select: selectExistingEvidence })),
       rpc: vi.fn().mockResolvedValue({
         data: {
           id: "report-1",
@@ -22,6 +26,7 @@ function createMockClient() {
       }
     },
     insert,
+    maybeSingle,
     upload
   };
 }
@@ -102,6 +107,22 @@ describe("report service", () => {
     expect(client.rpc).toHaveBeenCalledWith("create_emergency_report", expect.objectContaining({
       p_request_id: "11111111-1111-4111-8111-111111111111"
     }));
+  });
+
+  it("does not upload or insert evidence when the idempotent report already has it", async () => {
+    const { client, insert, maybeSingle, upload } = createMockClient();
+    maybeSingle.mockResolvedValue({ data: { id: "evidence-1" }, error: null });
+
+    const result = await createEmergencyReport(client, {
+      description: "Humo en el segundo piso",
+      evidence,
+      location: { addressText: "Av. Lima 116", latitude: -12.096, longitude: -77.036 },
+      type: "INCENDIO"
+    }, "11111111-1111-4111-8111-111111111111");
+
+    expect(upload).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+    expect(result).toEqual({ reportId: "report-1", status: "ENVIADO" });
   });
 
   it("cancels an incomplete report when evidence upload fails", async () => {

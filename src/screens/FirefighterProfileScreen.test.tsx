@@ -33,7 +33,13 @@ describe("FirefighterProfileScreen", () => {
   beforeEach(() => {
     authGetSession.mockResolvedValue({ data: { session: { user: { id: "auth-firefighter" } } } });
     profileMaybeSingle.mockResolvedValue({
-      data: { firefighter_code: "A27001", last_name: "Rojas", name: "Ana", phone: "+51999111222" }
+      data: {
+        firefighter_code: "A27001",
+        fire_companies: { name: "B-27 Salvadora Chiclayo" },
+        last_name: "Rojas",
+        name: "Ana",
+        phone: "+51999111222"
+      }
     });
   });
 
@@ -49,5 +55,15 @@ describe("FirefighterProfileScreen", () => {
       "href",
       "/bombero/historial"
     );
+  });
+
+  it("shows the firefighter's assigned company", async () => {
+    render(
+      <MemoryRouter>
+        <FirefighterProfileScreen navItems={[]} />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText("B-27 Salvadora Chiclayo")).toBeInTheDocument();
   });
 });

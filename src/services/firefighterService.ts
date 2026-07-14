@@ -12,6 +12,7 @@ export type FirefighterReportSummary = {
 };
 
 export type FirefighterEvidence = {
+  file_name: string;
   file_url: string;
   file_type: string;
   id: string;
@@ -96,14 +97,20 @@ export async function getFirefighterReportDetail(
 
   const { data: evidenceRows, error: evidenceError } = await client
     .from("report_evidence")
-    .select("id,file_url,file_type")
+    .select("id,file_name,file_url,file_type")
     .eq("report_id", reportId)
     .order("created_at", { ascending: true });
 
   if (evidenceError) throw evidenceError;
 
+  const uniqueEvidence = Array.from(
+    new Map(
+      ((evidenceRows ?? []) as Array<Omit<FirefighterEvidence, "signedUrl">>).map((item) => [item.file_name, item])
+    ).values()
+  );
+
   const evidence = await Promise.all(
-    ((evidenceRows ?? []) as Array<Omit<FirefighterEvidence, "signedUrl">>).map(async (item) => {
+    uniqueEvidence.map(async (item) => {
       const { data, error } = await client.storage!.from("report-evidence").createSignedUrl(item.file_url, 300);
       if (error || !data) throw error ?? new Error("No se pudo cargar la evidencia.");
       return { ...item, signedUrl: data.signedUrl };

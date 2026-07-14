@@ -106,7 +106,11 @@ export function FirefighterReportDetailScreen() {
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [report, tracking]);
+  }, [report?.id, report?.status, tracking]);
+
+  useEffect(() => {
+    if (report?.status === "EN_CAMINO") setTracking(true);
+  }, [report?.id, report?.status]);
 
   async function advanceStatus() {
     if (!report) return;
@@ -117,7 +121,8 @@ export function FirefighterReportDetailScreen() {
     setError("");
 
     try {
-      await updateFirefighterReportStatus(firefighterClient(), report.id, action.nextStatus);
+      const updatedReport = await updateFirefighterReportStatus(firefighterClient(), report.id, action.nextStatus);
+      if (updatedReport.status === "EN_CAMINO") setTracking(true);
       await loadReport();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No se pudo actualizar el estado.");
@@ -171,11 +176,9 @@ export function FirefighterReportDetailScreen() {
                 Ubicacion en vivo
               </p>
               <p className="mt-2 text-xs font-semibold text-muted">
-                {liveLocation ? formatCoordinatePair(liveLocation) : "Aun no enviada."}
+                {liveLocation ? formatCoordinatePair(liveLocation) : tracking ? "Obteniendo ubicacion del dispositivo..." : "Ubicacion no disponible."}
               </p>
-              <button className="btn-secondary mt-4" onClick={() => setTracking((current) => !current)} type="button">
-                {tracking ? "Detener ubicacion" : "Iniciar ubicacion"}
-              </button>
+              <p className="mt-3 text-[11px] font-medium leading-relaxed text-muted">La ubicacion se comparte automaticamente mientras el bombero esta en camino.</p>
             </div>
           ) : null}
 
